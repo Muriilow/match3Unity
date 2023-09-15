@@ -9,7 +9,8 @@ public class Board : MonoBehaviour
     [SerializeField] public int height;
 
     //prefab of our tile
-    public GameObject tilePrefab;
+    [SerializeField] public GameObject tilePrefab;
+
     //2d array 
     private BackgroundTile[,] allTiles;
     void Start()
@@ -26,8 +27,18 @@ public class Board : MonoBehaviour
             //down to up
             for(int j = 0; j < height; j++)
             {
-                Vector2 tempPosition = new Vector2(i, j);
-                Instantiate(tilePrefab, tempPosition, Quaternion.identity);
+                //The float position of the board obj NOT THE TILE
+                float fx = this.transform.position.x;
+                float fy = this.transform.position.y;
+
+                //When creating the tile it will have the position of the board as reference
+                Vector2 tempPosition = new Vector2(fx + (float)i, fy + (float)j);
+                //Putting the gameObject in the temp var backgroundTile
+                GameObject backgroundTile = Instantiate(tilePrefab, tempPosition, Quaternion.identity) as GameObject;
+                //Saying that the father of this tile is the gameObject board 
+                backgroundTile.transform.parent = this.transform;
+                //Putting a specific name to this tile
+                backgroundTile.name = "( " + i + "," + j + " )";
             }
         }
     }
