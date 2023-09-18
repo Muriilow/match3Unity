@@ -27,6 +27,12 @@ public class Candy : MonoBehaviour
         xIndex = x;
         yIndex = y;
     }
+    //method that does the same as the constructor
+    public void SetIndicies(int x, int y)
+    {
+        xIndex = x;
+        yIndex = y;
+    }
 }
 
 public enum CandyColor

@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3174755450601270058}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3, y: -5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,9 +44,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94cec2ca7821c7b42bc77389500fa537, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 7
-  height: 10
-  dots:
+  width: 6
+  height: 8
+  spacingX: 0
+  spacingY: 0
+  candiesPrefabs:
   - {fileID: 4277570835050354562, guid: 27a6bfc9973e87142ac757201fb40150, type: 3}
   - {fileID: 7039020755904658218, guid: 883a728863147cd4f8e291f7a236af53, type: 3}
   - {fileID: 8691893935551293884, guid: bc80f05634cdc5a4e8116cc16a1a92f6, type: 3}
@@ -55,4 +57,14 @@ MonoBehaviour:
   - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
   - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
   - {fileID: 3369709902898234117, guid: 198c5e15b60ab9a40966b56064cbeb3c, type: 3}
-  tilePrefab: {fileID: 3487440446074039882, guid: 2e32393fa4c59db4a8684e11675c079d, type: 3}
+  candiesBoardGO: {fileID: 3174755450601270058}
+  arrayLayout:
+    rows:
+    - row: 000000000000
+    - row: 000000000000
+    - row: 000000000000
+    - row: 000000000000
+    - row: 000000000000
+    - row: 000000000000
+    - row: 000000000000
+    - row: 000000000000
