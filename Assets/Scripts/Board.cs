@@ -14,7 +14,7 @@ public class Board : MonoBehaviour
     //Get a reference to our candies prefabs
     public GameObject[] candiesPrefabs;
     //Get a reference to the collection of backgroundTile board + GO
-    private BackgroundTile[,] backgroundTiles;
+    private BackgroundTile[,]  backgroundTiles;
     public GameObject candiesBoardGO;
     //layoutArray
     public ArrayLayout arrayLayout;
