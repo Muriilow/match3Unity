@@ -114,4 +114,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a8101ee4d931142987822395a4c8bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  swipeAngle: 0
+  candyColor: 6
+  xIndex: 0
+  yIndex: 0
+  isMatched: 0
+  isMoving: 0

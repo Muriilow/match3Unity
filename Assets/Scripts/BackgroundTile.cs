@@ -5,15 +5,17 @@ using UnityEngine.UIElements;
 
 public class BackgroundTile : MonoBehaviour
 {
+    /*Boolean value that allow us to create non retangular shapes
+    by determing if this tile can or cannot have a candy*/
+    public bool isUsable;
 
-    void Start()
+    //storing the candy inside the tile
+    public GameObject candy;
+    
+    //Constructor
+    public BackgroundTile(bool _isUsable, GameObject _candy)
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        isUsable = _isUsable;
+        candy = _candy;
     }
 }
