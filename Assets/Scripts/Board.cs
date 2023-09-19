@@ -62,7 +62,15 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        CheckBoard();
+        if(CheckBoard())
+        {
+            Debug.Log("We have matches lets recreate the board");
+            InitializeBoard();
+        }
+        else 
+        {
+            Debug.Log("Theres no matches wow");
+        }
     }
 
     //If we have a match 
@@ -92,7 +100,7 @@ public class Board : MonoBehaviour
                         MatchResult matchedCandies= IsConnected(candy);
 
                         //If we had a match 
-                        if(matchedCandies.connectedCandies.Count <= 3)
+                        if(matchedCandies.connectedCandies.Count >= 3)
                         {
                             //Complex matching
 
@@ -102,8 +110,9 @@ public class Board : MonoBehaviour
                             //And for each candy set their variable hasMatched to true (!= isMatched inside the candy script)
                             foreach (Candy cand in matchedCandies.connectedCandies)
                             {
-                                hasMatched = true;
+                                cand.isMatched = true;
                             }
+                            hasMatched = true;
                         }
                     }
                 }
@@ -220,10 +229,6 @@ public class Board : MonoBehaviour
                     //Adding value to our x and y to continue the loop 
                     x += direction.x;
                     y += direction.y;
-
-                    otherCandy.isMatched = true;
-                    candy.isMatched = true;
-
                 }
                 else 
                 { break; }
