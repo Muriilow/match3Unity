@@ -143,13 +143,13 @@ public class Board : MonoBehaviour
                         //If we had a match 
                         if(matchedCandies.connectedCandies.Count >= 3)
                         {
-                            //Complex matching
-
+                            //Take the class inside matchesCandies var and put in the method supermatch to see if has a match
+                            MatchResult superMatchedCandies = SuperMatch(matchedCandies);
                             //put them in a list that we've created early in this function 
-                            candiesToRemove.AddRange(matchedCandies.connectedCandies);
+                            candiesToRemove.AddRange(superMatchedCandies.connectedCandies);
 
                             //And for each candy set their variable hasMatched to true (!= isMatched inside the candy script)
-                            foreach (Candy cand in matchedCandies.connectedCandies)
+                            foreach (Candy cand in superMatchedCandies.connectedCandies)
                             {
                                 cand.isMatched = true;
                             }
@@ -160,6 +160,68 @@ public class Board : MonoBehaviour
             }
         } 
         return hasMatched;
+    }
+
+    private MatchResult SuperMatch(MatchResult _matchedResults)
+    {
+        //if the class used as a argument here have a horizontal or long horizontal match
+        if (_matchedResults.direction == MatchDirection.Horizontal || _matchedResults.direction == MatchDirection.LongHorizontal)
+        {
+            //loop through the candies in my match
+            foreach (Candy candy in _matchedResults.connectedCandies)
+            {
+                //Create a new list of candies 'extra matches'
+                List<Candy> extraConnectedCandies = new();
+                //CheckDirection up
+                CheckDirection(candy, new Vector2Int(0, 1), extraConnectedCandies);
+                //CheckDirection down
+                CheckDirection(candy, new Vector2Int(0, -1), extraConnectedCandies);
+
+                //Do we have 2 or more extra matches.
+                if (extraConnectedCandies.Count >= 2)
+                {
+                    Debug.Log("I have a super Horizontal Match");
+                    extraConnectedCandies.AddRange(_matchedResults.connectedCandies);
+
+                    //we've made a super match - retunr a new matchresult of type super
+                    return new MatchResult
+                    {
+                        connectedCandies = extraConnectedCandies,
+                        direction = MatchDirection.Super
+                    };
+                }
+            }
+        }
+
+        //if the class used as a argument here have a vertical or long vertical match
+        else if (_matchedResults.direction == MatchDirection.Vertical || _matchedResults.direction == MatchDirection.LongVertical)
+        {
+            //loop through the candies in my match
+            foreach (Candy candy in _matchedResults.connectedCandies)
+            {
+                //Create a new list of candies 'extra matches'
+                List<Candy> extraConnectedCandies = new();
+                //CheckDirection left
+                CheckDirection(candy, new Vector2Int(-1, 0), extraConnectedCandies);
+                //CheckDirection right
+                CheckDirection(candy, new Vector2Int(1, 0), extraConnectedCandies);
+
+                //Do we have 2 or more extra matches.
+                if (extraConnectedCandies.Count >= 2)
+                {
+                    Debug.Log("I have a super Vertical Match");
+                    extraConnectedCandies.AddRange(_matchedResults.connectedCandies);
+
+                    //we've made a super match - retunr a new matchresult of type super
+                    return new MatchResult
+                    {
+                        connectedCandies = extraConnectedCandies,
+                        direction = MatchDirection.Super
+                    };
+                }
+            }
+        }
+        return null;
     }
 
     //Is connected with the candies of same type
@@ -271,12 +333,9 @@ public class Board : MonoBehaviour
                     x += direction.x;
                     y += direction.y;
                 }
-                else 
-                { break; }
+                else break;
             }
-            else
-            { break; }
-        }
+            else break;        }
     }
     #region Swapping candies
     //Select a candy
