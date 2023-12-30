@@ -68,3 +68,7 @@ MonoBehaviour:
     - row: 000000000000
     - row: 000000000000
     - row: 000000000000
+  candiesToDestroy: []
+  selectedCandy: {fileID: 0}
+  candyParent: {fileID: 0}
+  isProcessingMove: 0
