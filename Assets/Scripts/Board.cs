@@ -12,12 +12,16 @@ public class Board : MonoBehaviour
     public float spacingX;
     public float spacingY;
     //Get a reference to our candies prefabs
-    public GameObject[] candiesPrefabs;
+    [SerializeField] public GameObject[] candiesPrefabs;
     //Get a reference to the collection of backgroundTile board + GO
     private BackgroundTile[,]  backgroundTiles;
-    public GameObject candiesBoardGO;
+
+    //Get a reference to the backgroundtiles obj
+    [SerializeField] public GameObject backgroundObj;
+
+    [SerializeField] public GameObject candiesBoardGO;
     //layoutArray
-    public ArrayLayout arrayLayout;
+    [SerializeField] public ArrayLayout arrayLayout;
     //public static of board
     public static Board Instance;
     //List to hold the value of the candies that will be destroyed 
@@ -31,6 +35,9 @@ public class Board : MonoBehaviour
 
     //Is it already moving?
     [SerializeField] private bool isProcessingMove;
+
+    //The list have the candies were going to remove
+    [SerializeField] private List<Candy> candiesToRemove = new();
 
     //Unity method that initialize the code when the obj with this script is called
     private void Awake()
@@ -67,7 +74,8 @@ public class Board : MonoBehaviour
         //Settign the size of this 2d array in this variable
         backgroundTiles = new BackgroundTile[width, height];
 
-        spacingX = (float)(width - 1) / 2; //2.5
+        //Variables that control where should the candies be placed
+        spacingX = (float)(width - 1) / 2 - 2; //2.5
         spacingY = (float)(height - 1) / 2; //3.5
 
         for (int y = 0; y < height; y++)
@@ -96,7 +104,7 @@ public class Board : MonoBehaviour
             }
         }
         //Its not a match so dont remove and refill the board
-        if(CheckBoard(false))
+        if(CheckBoard())
         {
             Debug.Log("We have matches lets recreate the board");
             InitializeBoard();
@@ -120,13 +128,18 @@ public class Board : MonoBehaviour
     }
 
     //If we have a match 
-    public bool CheckBoard(bool _takeAction)
+    public bool CheckBoard()
     {
+        //If the game ended do not do matches anymore
+        if (GameManager.Instance.isGameEnded)
+            return false;
+
         Debug.Log("Checking Board");
         //If we have at least 1 check at the board and we have a match 
         bool hasMatched = false;
 
-        List<Candy> candiesToRemove = new();
+        //cleaning the list created by the class that have the candies matched
+        candiesToRemove.Clear();
 
         foreach(BackgroundTile backgroundTile in backgroundTiles)
         {
@@ -171,22 +184,27 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        if (_takeAction)
-        {
-            foreach (Candy candyToRemove in candiesToRemove)
-            {
-                candyToRemove.isMatched = false;
-            }
 
-            RemoveAndRefill(candiesToRemove);
-
-            //Check for a brand new match 
-            if (CheckBoard(false))
-            {
-                CheckBoard(true);
-            }
-        }
         return hasMatched;
+    }
+
+    public IEnumerator ProcessTurnOnMatchedBoard(bool _subtractMoves)
+    {
+        foreach (Candy candyToRemove in candiesToRemove)
+        {
+            candyToRemove.isMatched = false;
+        }
+
+        RemoveAndRefill(candiesToRemove);
+
+        GameManager.Instance.ProcessTurn(candiesToRemove.Count, _subtractMoves);
+
+        yield return new WaitForSeconds(0.6f);
+
+        if (CheckBoard())
+        {
+            StartCoroutine(ProcessTurnOnMatchedBoard(false));
+        }
     }
 
     private void RemoveAndRefill(List<Candy> _candiesToRemove)
@@ -202,7 +220,11 @@ public class Board : MonoBehaviour
             Destroy(candy.gameObject);
 
             //Create a blank node on the board
-            backgroundTiles[_xIndex, _yIndex] = new BackgroundTile(true, null);
+            if(backgroundTiles[_xIndex, _yIndex].isUsable == true)
+            {
+                backgroundTiles[_xIndex, _yIndex] = new BackgroundTile(true, null);
+            }
+            
         }
 
         for (int x = 0; x < width; x++)
@@ -476,13 +498,16 @@ public class Board : MonoBehaviour
         //Wait for some seconds
         yield return new WaitForSeconds(0.2f);
 
-        //Check the board again and save in this variable
-        bool hasMatch = CheckBoard(true);
-
-        if(!hasMatch)
+        if(CheckBoard())
+        {
+            //Start coroutine to process the matches in our turn
+            StartCoroutine(ProcessTurnOnMatchedBoard(true));
+        }
+        else
         {
             DoSwap(_currentCandy, _targetCandy);
         }
+
         isProcessingMove = false;
     }
     //isAdjecent
@@ -598,3 +623,4 @@ public enum MatchDirection
     Super,
     None
 }
+               

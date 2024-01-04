@@ -16,6 +16,14 @@ public class BackgroundTile : MonoBehaviour
     public BackgroundTile(bool _isUsable, GameObject _candy)
     {
         isUsable = _isUsable;
+
+        if (!_isUsable)
+        {
+            candy = null;
+        }
+
         candy = _candy;
+
+
     }
 }

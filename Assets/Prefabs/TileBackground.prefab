@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4165556530750354031}
-  - component: {fileID: 2616781227279431319}
-  - component: {fileID: 4750320289362011258}
+  - component: {fileID: -2980091521117443713}
+  - component: {fileID: -6652206824485664473}
   m_Layer: 0
   m_Name: TileBackground
   m_TagString: Untagged
@@ -33,14 +33,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &2616781227279431319
+--- !u!114 &-2980091521117443713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3487440446074039882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4555229cda2c0f4489106884bed69180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isUsable: 0
+  candy: {fileID: 0}
+--- !u!212 &-6652206824485664473
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3487440446074039882}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -79,30 +93,9 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 5.12, y: 5.12}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &4750320289362011258
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3487440446074039882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4555229cda2c0f4489106884bed69180, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dots:
-  - {fileID: 3369709902898234117, guid: 198c5e15b60ab9a40966b56064cbeb3c, type: 3}
-  - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
-  - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
-  - {fileID: 1930836459113843313, guid: f91fdabebf34f0e468ba315a844172ed, type: 3}
-  - {fileID: 9179460205311072159, guid: 9654719d845f7ee4ba5c05240f71aae9, type: 3}
-  - {fileID: 8691893935551293884, guid: bc80f05634cdc5a4e8116cc16a1a92f6, type: 3}
-  - {fileID: 7039020755904658218, guid: 883a728863147cd4f8e291f7a236af53, type: 3}
-  - {fileID: 4277570835050354562, guid: 27a6bfc9973e87142ac757201fb40150, type: 3}

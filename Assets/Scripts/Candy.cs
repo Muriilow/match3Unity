@@ -64,12 +64,9 @@ public class Candy : MonoBehaviour
 
 public enum CandyColor
 {
-    Green,
-    Indigo,
-    Orange,
-    Pink,
-    Salmon,
-    Teal,
-    Yellow,
-    BrightBlue
+    ChocolatePiece,
+    Snickers,
+    ChocolateTriang,
+    WhiteChocolateCircle,
+    WhiteChocolateRect
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,6 +17,10 @@ public class GameManager : MonoBehaviour
     public int moves; //The amount of moves left in the level 
     public int points; //The points that we have
 
+    [SerializeField] public TMP_Text pointsTxt;
+    [SerializeField] public TMP_Text movesTxt;
+    [SerializeField] public TMP_Text goalTxt;
+
     public bool isGameEnded;
 
     private void Awake()
@@ -28,15 +33,13 @@ public class GameManager : MonoBehaviour
         moves = _moves;
         goal = _goal;
     }
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
     {
-        
+        pointsTxt.text = "Points: " + points.ToString();
+        movesTxt.text = "Moves: " + moves.ToString();
+        goalTxt.text = "Goal: " + goal.ToString();
     }
 
     //Attached to a button to change scene when winning 
@@ -62,8 +65,8 @@ public class GameManager : MonoBehaviour
             isGameEnded = true;
 
             //display a victory screen
-            backgroundPanel.SetActive(true);
-            victoryPanel.SetActive(true);
+            //backgroundPanel.SetActive(true);
+            //victoryPanel.SetActive(true);
             return;
         }
 
@@ -71,8 +74,9 @@ public class GameManager : MonoBehaviour
         {
             //you've lost
             isGameEnded = true;
-            backgroundPanel.SetActive(true);
-            losePanel.SetActive(true);
+            //backgroundPanel.SetActive(true);
+            //losePanel.SetActive(true);
+            return;
         }
     }
 }

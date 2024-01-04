@@ -49,14 +49,11 @@ MonoBehaviour:
   spacingX: 0
   spacingY: 0
   candiesPrefabs:
-  - {fileID: 4277570835050354562, guid: 27a6bfc9973e87142ac757201fb40150, type: 3}
-  - {fileID: 7039020755904658218, guid: 883a728863147cd4f8e291f7a236af53, type: 3}
-  - {fileID: 8691893935551293884, guid: bc80f05634cdc5a4e8116cc16a1a92f6, type: 3}
-  - {fileID: 9179460205311072159, guid: 9654719d845f7ee4ba5c05240f71aae9, type: 3}
-  - {fileID: 1930836459113843313, guid: f91fdabebf34f0e468ba315a844172ed, type: 3}
   - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
   - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
   - {fileID: 3369709902898234117, guid: 198c5e15b60ab9a40966b56064cbeb3c, type: 3}
+  - {fileID: 9179460205311072159, guid: 9654719d845f7ee4ba5c05240f71aae9, type: 3}
+  - {fileID: 1930836459113843313, guid: f91fdabebf34f0e468ba315a844172ed, type: 3}
   candiesBoardGO: {fileID: 3174755450601270058}
   arrayLayout:
     rows:
