@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Board : MonoBehaviour
 {
@@ -39,6 +41,8 @@ public class Board : MonoBehaviour
     //The list have the candies were going to remove
     [SerializeField] private List<Candy> candiesToRemove = new();
 
+    [SerializeField] private GameObject background;
+
     //Unity method that initialize the code when the obj with this script is called
     private void Awake()
     {
@@ -62,7 +66,7 @@ public class Board : MonoBehaviour
                 if (isProcessingMove) return;
 
                 Candy candy = hit.collider.gameObject.GetComponent<Candy>();
-                Debug.Log("I have clicked a candy it is:" + candy.gameObject);
+               // Debug.Log("I have clicked a candy it is:" + candy.gameObject);
 
                 SelectCandy(candy);
             }
@@ -84,6 +88,8 @@ public class Board : MonoBehaviour
             {
                 //pos for the candy 
                 Vector2 position = new Vector2(x - spacingX, y - spacingY);
+
+
                 /*If I checked the buttons in the inspector of this obj, the tile with the
                 same pos as the inspector button will not work and will not have a candy on it*/
                 if (arrayLayout.rows[y].row[x])
@@ -93,25 +99,26 @@ public class Board : MonoBehaviour
                 else 
                 {
                     //random number
-                    int randomIndex = Random.Range(0, candiesPrefabs.Length);
-                
+                    int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
+
                     GameObject candy = Instantiate(candiesPrefabs[randomIndex], position, Quaternion.identity);
                     candy.GetComponent<Candy>().SetIndicies(x, y);
                     candy.transform.SetParent(candyParent.transform);
                     backgroundTiles[x, y] = new BackgroundTile(true, candy);
                     candiesToDestroy.Add(candy);
                 }
+                
             }
         }
         //Its not a match so dont remove and refill the board
         if(CheckBoard())
         {
-            Debug.Log("We have matches lets recreate the board");
+            //Debug.Log("We have matches lets recreate the board");
             InitializeBoard();
         }
         else 
         {
-            Debug.Log("Theres no matches wow");
+            CreateBackground();
         }
     }
 
@@ -126,7 +133,23 @@ public class Board : MonoBehaviour
             candiesToDestroy.Clear();
         }
     }
+     
+    private void CreateBackground()
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Vector3 position = new Vector3(x - spacingX, y - spacingY, 1);
 
+                if (backgroundTiles[x, y].isUsable == true)
+                {
+                    Instantiate(background, position, Quaternion.identity);
+                }
+
+            }
+        }
+    }
     //If we have a match 
     public bool CheckBoard()
     {
@@ -153,7 +176,7 @@ public class Board : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 //Checking if the tile is usable
-                if (backgroundTiles[x, y].isUsable)
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null)
                 {
                     //Then proceed to get candy class in tile
                     Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>(); 
@@ -219,11 +242,8 @@ public class Board : MonoBehaviour
             //Destroy the candy
             Destroy(candy.gameObject);
 
-            //Create a blank node on the board
-            if(backgroundTiles[_xIndex, _yIndex].isUsable == true)
-            {
-                backgroundTiles[_xIndex, _yIndex] = new BackgroundTile(true, null);
-            }
+            backgroundTiles[_xIndex, _yIndex] = new BackgroundTile(true, null);
+
             
         }
 
@@ -231,10 +251,13 @@ public class Board : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                if(backgroundTiles[x, y].candy == null)
+                //In the empty space that is usable and have no candies refill it
+                if(backgroundTiles[x, y].candy == null && backgroundTiles[x, y].isUsable == true)
                 {
-                    Debug.Log("The location X: " + x + " Y: " + y + " is empty, attempting to refill it");
-                    RefillCandy(x, y);      
+
+                    //Debug.Log("The location X: " + x + " Y: " + y + " is empty, attempting to refill it");
+                    RefillCandy(x, y);
+
                 }
             }
         }
@@ -259,7 +282,7 @@ public class Board : MonoBehaviour
                 //Do we have 2 or more extra matches.
                 if (extraConnectedCandies.Count >= 2)
                 {
-                    Debug.Log("I have a super Horizontal Match");
+                  //  Debug.Log("I have a super Horizontal Match");
                     extraConnectedCandies.AddRange(_matchedResults.connectedCandies);
 
                     //we've made a super match - retunr a new matchresult of type super
@@ -293,7 +316,7 @@ public class Board : MonoBehaviour
                 //Do we have 2 or more extra matches.
                 if (extraConnectedCandies.Count >= 2)
                 {
-                    Debug.Log("I have a super Vertical Match");
+                   // Debug.Log("I have a super Vertical Match");
                     extraConnectedCandies.AddRange(_matchedResults.connectedCandies);
 
                     //we've made a super match - retunr a new matchresult of type super
@@ -332,7 +355,7 @@ public class Board : MonoBehaviour
         //have we made a 3 match? (Horizontal Match)
         if(connectedCandies.Count == 3)
         {
-            Debug.Log("I have a normal horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
+           // Debug.Log("I have a normal horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
             //Return the class that i've create below, and this class is going to collect the list of candies connected and the direction of the match
             return new MatchResult
             {
@@ -343,7 +366,7 @@ public class Board : MonoBehaviour
         //Checking for more than 3 (Long horizontal match)
         else if(connectedCandies.Count > 3)
         {
-            Debug.Log("I have a long horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
+            //Debug.Log("I have a long horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
             //Return the class that i've create below, and this class is going to collect the list of candies connected and the direction of the match
             return new MatchResult
             {
@@ -363,7 +386,7 @@ public class Board : MonoBehaviour
         //have we made a 3 match? (Vertical Match)
         if (connectedCandies.Count == 3)
         {
-            Debug.Log("I have a normal vertical match, the color of my match is:" + connectedCandies[0].candyColor);
+            //Debug.Log("I have a normal vertical match, the color of my match is:" + connectedCandies[0].candyColor);
             //Return the class that i've create below, and this class is going to collect the list of candies connected and the direction of the match
             return new MatchResult
             {
@@ -374,7 +397,7 @@ public class Board : MonoBehaviour
         //Checking for more than 3 (Long vertical match)
         else if (connectedCandies.Count > 3)
         {
-            Debug.Log("I have a long vertical match, the color of my match is: " + connectedCandies[0].candyColor);
+           // Debug.Log("I have a long vertical match, the color of my match is: " + connectedCandies[0].candyColor);
             //Return the class that i've create below, and this class is going to collect the list of candies connected and the direction of the match
             return new MatchResult
             {
@@ -407,8 +430,9 @@ public class Board : MonoBehaviour
         //Check that we're within the boundaries of the board
         while (x >= 0 && x < width && y >= 0 && y < height)
         {
-            if (backgroundTiles[x, y].isUsable)
+            if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null)
             {
+                //Debug.Log("Checking the candie in the x and y pos: " + x + " " + y);
                 //Getting the candy next to us
                 Candy otherCandy = backgroundTiles[x, y].candy.GetComponent<Candy>();
 
@@ -496,7 +520,7 @@ public class Board : MonoBehaviour
     private IEnumerator ProcessMatches(Candy _currentCandy, Candy _targetCandy)
     {
         //Wait for some seconds
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.3f);
 
         if(CheckBoard())
         {
@@ -524,25 +548,23 @@ public class Board : MonoBehaviour
         //y offset 
         int yOffset = 1;
 
-        //While the cell above our current cell is null and we're below the height of the board
-        while (y + yOffset < height && backgroundTiles[x, y + yOffset].candy == null)
+        //While the cell above our current cell have no candy and is usable and we're below the height of the board OR the cell above us is not usable and we're below the height of the boards
+        while ((y + yOffset < height && backgroundTiles[x, y + yOffset].candy == null && backgroundTiles[x, y + yOffset].isUsable == true) || (y + yOffset < height && backgroundTiles[x, y + yOffset].isUsable == false))
         {
             //Increment y offset
-            Debug.Log("The candy abover me is null and Im not at the top of the board yet, so Ill add to my yOffset and try again" + yOffset);
+            Debug.Log("The candy abover me is null and Im not at the top of the board yet, so Ill add to my yOffset and try again " + yOffset + "and my x and y position is: " + x + " " + y);
             yOffset++;
         }
 
-        //we've either hit the top of the board or we found a candy
 
         if (y + yOffset < height && backgroundTiles[x, y + yOffset].candy != null)
         {
             //we've found a candy
             Candy candyAbove = backgroundTiles[x, y + yOffset].candy.GetComponent<Candy>();
 
-
             //Getting the location
             Vector3 targetPos = new Vector3(x - spacingX, y - spacingY, candyAbove.transform.position.z);
-            Debug.Log("I've found a candy when refilling the board and it was in the location X: " + x + "Y: " + (y + yOffset));
+
             //Move it to the correct location
             candyAbove.MoveToTarget(targetPos);
 
@@ -555,10 +577,11 @@ public class Board : MonoBehaviour
             //Set the location the candy came from to null
             backgroundTiles[x, y + yOffset] = new BackgroundTile(true, null);
         }
-        //If we've hit the top of the board without finding a candy
+
+        //If we've hit the top of the board without finding a candy 
         if(y + yOffset == height)
         {
-            Debug.Log("I have reached the top of the board without finding a candy");
+            Debug.Log("I have reached the top of the board without finding a candy at the x location of:" + x + "and y: " + y);
             SpawnCandyAtTop(x);
         }
     }
@@ -569,10 +592,10 @@ public class Board : MonoBehaviour
         //How mucn we need to go down
         int locationToMoveTo = 8 - index;
 
-        Debug.Log("About to spawn a candy, ideally i'd like to put it in the index of: " + index);
+        Debug.Log("About to spawn a candy, ideally i'd like to put it in the index of: " + index + " and the x pos is:" + x );
 
         //Get a random candy
-        int randomIndex = Random.Range(0, candiesPrefabs.Length); 
+        int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length); 
         GameObject newCandy = Instantiate(candiesPrefabs[randomIndex], new Vector2(x - spacingX, height - spacingY), Quaternion.identity);
 
         //Setting the parent
@@ -595,7 +618,7 @@ public class Board : MonoBehaviour
         int lowestNull = 99;
         for(int y = 7; y >= 0; y--)
         {
-            if (backgroundTiles[x, y].candy == null)
+            if (backgroundTiles[x, y].candy == null && backgroundTiles[x, y].isUsable == true)
             {
                 lowestNull = y;
             }

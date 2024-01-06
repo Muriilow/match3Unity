@@ -43,7 +43,7 @@ public class Candy : MonoBehaviour
     private IEnumerator MoveCoroutine(Vector2 _targetPos)
     {
         isMoving = true;
-        float duration = 0.2f;
+        float duration = 0.4f;
 
         Vector2 startPosition = transform.position;
         float elaspedTime = 0f;
