@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Candy : MonoBehaviour
 {
-    [SerializeField] public CandyColor candyColor;
+    public CandyColor candyColor;
     //My x and y position
     public int xIndex;
     public int yIndex;
@@ -14,9 +14,9 @@ public class Candy : MonoBehaviour
     public bool isMatched;
 
     //where it is right now
-    private Vector2 currentPos;
+    //private Vector2 currentPos;
     //Where do it want to be
-    private Vector2 targetPos;
+    //private Vector2 targetPos;
 
     //Var to control when the obj is moving 
     public bool isMoving;
@@ -68,5 +68,6 @@ public enum CandyColor
     Snickers,
     ChocolateTriang,
     WhiteChocolateCircle,
-    WhiteChocolateRect
+    WhiteChocolateRect,
+    SpecialCookie
 }

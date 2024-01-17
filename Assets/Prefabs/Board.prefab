@@ -48,12 +48,6 @@ MonoBehaviour:
   height: 8
   spacingX: 0
   spacingY: 0
-  candiesPrefabs:
-  - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
-  - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
-  - {fileID: 3369709902898234117, guid: 198c5e15b60ab9a40966b56064cbeb3c, type: 3}
-  - {fileID: 9179460205311072159, guid: 9654719d845f7ee4ba5c05240f71aae9, type: 3}
-  - {fileID: 1930836459113843313, guid: f91fdabebf34f0e468ba315a844172ed, type: 3}
   candiesBoardGO: {fileID: 3174755450601270058}
   arrayLayout:
     rows:
@@ -66,6 +60,16 @@ MonoBehaviour:
     - row: 000000000000
     - row: 000000000000
   candiesToDestroy: []
+  candiesPrefabs:
+  - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
+  - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
+  - {fileID: 9179460205311072159, guid: 9654719d845f7ee4ba5c05240f71aae9, type: 3}
+  - {fileID: 1930836459113843313, guid: f91fdabebf34f0e468ba315a844172ed, type: 3}
+  - {fileID: 3369709902898234117, guid: 198c5e15b60ab9a40966b56064cbeb3c, type: 3}
+  - {fileID: 2649556833596128382, guid: 490ce70b62990e446851d49ff6416352, type: 3}
+  superCandiesPrefabs: []
   selectedCandy: {fileID: 0}
   candyParent: {fileID: 0}
   isProcessingMove: 0
+  candiesToRemove: []
+  background: {fileID: 0}
