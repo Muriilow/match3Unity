@@ -499,7 +499,7 @@ public class Board : MonoBehaviour
         if(CheckBoard())
         {
             //Start coroutine to process the matches in our turn
-            StartCoroutine(ProcessTurnOnMatchedBoard(true));
+            StartCoroutine(ProcessTurnOnMatchedBoard(true, false));
         }
         else
         {
@@ -518,22 +518,41 @@ public class Board : MonoBehaviour
 
     #region Cascading Candies
 
-    public IEnumerator ProcessTurnOnMatchedBoard(bool _subtractMoves)
+    //When we got a match and after that another match, this one was automatic so the player did nothing to happen
+    public IEnumerator ProcessTurnOnMatchedBoard(bool _subtractMoves, bool _multiplyPoints)
     {
+        //Create the variable responsible for storing the points
+        int points;
+
+        //Every candy that is on the list will have the variable asMatched as false
         foreach (Candy candyToRemove in candiesToRemove)
         {
             candyToRemove.isMatched = false;
         }
 
+        //If its the match caused by the cascade calculate the points and double it 
+        if (_multiplyPoints)
+        {
+            points = CalculatePoints(true);
+        }
+        //If the matched caused by the player calculate the points 
+        else 
+        {
+            points = CalculatePoints(false);
+        }
+
+        //Remove the candies in the list
         RemoveAndRefill(candiesToRemove);
 
-        GameManager.Instance.ProcessTurn(candiesToRemove.Count, _subtractMoves);
+        //Calculate the points and subtract the moves if necessary 
+        GameManager.Instance.ProcessTurn(points, _subtractMoves);
 
         yield return new WaitForSeconds(0.6f);
 
+        //Check teh board again, if we have a match start this method again but doenst subtract the move and multiply the points
         if (CheckBoard())
         {
-            StartCoroutine(ProcessTurnOnMatchedBoard(false));
+            StartCoroutine(ProcessTurnOnMatchedBoard(false, true));
         }
     }
 
@@ -653,8 +672,26 @@ public class Board : MonoBehaviour
     }
     #endregion
 
-    #region Super Match
- 
+    #region Points
+    
+    private int CalculatePoints(bool _multiplyPoints)
+    {
+        int points = 0;
+
+        foreach (Candy candyToRemove in candiesToRemove)
+        {
+            points += 100;
+        }
+
+        if (_multiplyPoints)
+        {
+            points *= 2;
+        }
+
+        Debug.Log("I made " + points + " points");
+        return points;
+    }
+
     #endregion
 
 }

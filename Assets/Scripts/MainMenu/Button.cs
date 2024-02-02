@@ -10,9 +10,9 @@ public class Button : MonoBehaviour
         SceneManager.LoadSceneAsync("Main");
     }
 
-    public void ClickOnSettings()
+    public void BackToMenu()
     {
-        SceneManager.LoadSceneAsync("Main");
+        SceneManager.LoadSceneAsync("MainMenu");
     }
 
     public void ClickOnCredits()
