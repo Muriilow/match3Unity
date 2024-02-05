@@ -42,7 +42,7 @@ public class Board : MonoBehaviour
     [SerializeField] private bool isProcessingMove;
 
     //The list have the candies were going to remove
-    [SerializeField] private List<Candy> candiesToRemove = new();
+    [SerializeField] public List<Candy> candiesToRemove = new();
 
     [SerializeField] private GameObject background;
 
@@ -127,7 +127,7 @@ public class Board : MonoBehaviour
         {
             for (int x = 0; x < width; x++)
             {
-                Vector3 position = new Vector3(x - spacingX, y - spacingY, 1);
+                Vector3 position = new Vector3(x - spacingX, y - spacingY, 0);
 
                 if (backgroundTiles[x, y].isUsable)
                 {
@@ -531,21 +531,14 @@ public class Board : MonoBehaviour
         }
 
         //If its the match caused by the cascade calculate the points and double it 
-        if (_multiplyPoints)
-        {
-            points = CalculatePoints(true);
-        }
-        //If the matched caused by the player calculate the points 
-        else 
-        {
-            points = CalculatePoints(false);
-        }
+        points = CalculatePoints(_multiplyPoints);
+
+        //Calculate the points and subtract the moves if necessary 
+        GameManager.Instance.ProcessTurn(points, _subtractMoves, candiesToRemove);
 
         //Remove the candies in the list
         RemoveAndRefill(candiesToRemove);
 
-        //Calculate the points and subtract the moves if necessary 
-        GameManager.Instance.ProcessTurn(points, _subtractMoves);
 
         yield return new WaitForSeconds(0.6f);
 
@@ -597,7 +590,7 @@ public class Board : MonoBehaviour
         while ((y + yOffset < height && backgroundTiles[x, y + yOffset].candy == null && backgroundTiles[x, y + yOffset].isUsable == true) || (y + yOffset < height && backgroundTiles[x, y + yOffset].isUsable == false))
         {
             //Increment y offset
-            Debug.Log("The candy abover me is null and Im not at the top of the board yet, so Ill add to my yOffset and try again " + yOffset + "and my x and y position is: " + x + " " + y);
+            //Debug.Log("The candy abover me is null and Im not at the top of the board yet, so Ill add to my yOffset and try again " + yOffset + "and my x and y position is: " + x + " " + y);
             yOffset++;
         }
 
@@ -626,7 +619,7 @@ public class Board : MonoBehaviour
         //If we've hit the top of the board without finding a candy 
         if(y + yOffset == height)
         {
-            Debug.Log("I have reached the top of the board without finding a candy at the x location of:" + x + "and y: " + y);
+            //Debug.Log("I have reached the top of the board without finding a candy at the x location of:" + x + "and y: " + y);
             SpawnCandyAtTop(x);
         }
     }
@@ -637,7 +630,7 @@ public class Board : MonoBehaviour
         //How mucn we need to go down
         int locationToMoveTo = 8 - index;
 
-        Debug.Log("About to spawn a candy, ideally i'd like to put it in the index of: " + index + " and the x pos is:" + x );
+        //Debug.Log("About to spawn a candy, ideally i'd like to put it in the index of: " + index + " and the x pos is:" + x );
 
         //Get a random candy
         int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length); 

@@ -1,11 +1,26 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+
+    //Get a reference to our candies prefabs
+    [SerializeField] private Candy[] candiesPrefabs;
+
+    //The array containing the candies taht need to be destroyed in order to win the game
+    [SerializeField] private Candy[] candiesObjective = new Candy[3];
+
+    //Array to get the sprites of candies
+    public Sprite[] candiesSprites;
+
+    //Array to get the UI Images for the sldiers
+    public UnityEngine.UI.Image[] imgSlider;
 
     public static GameManager Instance; //static reference
 
@@ -13,15 +28,25 @@ public class GameManager : MonoBehaviour
     public GameObject victoryPanel;
     public GameObject losePanel;
 
+    public int level; //The level we're in needs to be public
+    private int goal; //The amount of points to win
+    private int moves; //The amount of moves left in the level 
+    private int points; //The points that we have
 
-    public int level; //The level we're in 
-    public int goal; //The amount of points to win
-    public int moves; //The amount of moves left in the level 
-    public int points; //The points that we have
+    [SerializeField] private int remainingCandies1 = 0;
+    [SerializeField] private int remainingCandies2 = 0;
+    [SerializeField] private int remainingCandies3 = 0;
 
-    [SerializeField] public TMP_Text pointsTxt;
-    [SerializeField] public TMP_Text movesTxt;
-    [SerializeField] public TMP_Text goalTxt;
+    [SerializeField] private TMP_Text pointsTxt;    //Points text displayed in the UI
+    [SerializeField] private TMP_Text movesTxt;     //Moves text displayed in the UI
+    [SerializeField] private TMP_Text goalTxt;      //Goal text displayed in the UI
+    [SerializeField] private TMP_Text levelText;    //Level text displayed in the UI
+
+    //Reference to the sliders and it images
+    public ObjectiveSlider slider1;
+
+    public ObjectiveSlider slider2;
+    public ObjectiveSlider slider3;
 
     public bool isGameEnded;
 
@@ -29,6 +54,9 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
         LoadGame();
+        Initialize(100000, 100000);
+        CreateObjective();
+        
     }
 
     public void Initialize(int _moves, int _goal)
@@ -44,59 +72,64 @@ public class GameManager : MonoBehaviour
         movesTxt.text = "Moves: " + moves.ToString();
         goalTxt.text = "Goal: " + goal.ToString();
 
-        switch (level)
-        {
-            case 0: moves = 99; goal = 999; break;
-            case 1: moves = 99; goal = 999; break;
-            case 2: moves = 99; goal = 999; break;
-            case 3: moves = 99; goal = 999; break;
-            case 4: moves = 9999; goal = 9999; break;
-        }
     }
 
     //Attached to a button to change scene when winning 
     public void WinGame()
     {
+        isGameEnded = true;
         level++;
         SaveGame();
-        
+        //backgroundPanel.SetActive(true);
+        victoryPanel.SetActive(true);
+        //SceneManager.LoadScene("Main");
     }
 
     public void LoseGame()
     {
+        isGameEnded = true;            
+        //backgroundPanel.SetActive(true);
+        //losePanel.SetActive(true);
         SaveGame();
     }
-
-    public void ProcessTurn(int _pointsToGain, bool _reduceMoves)
+    //Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
+    // && adds the points to our score 
+    public void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
     {
         points += _pointsToGain;
 
-        if(_reduceMoves) moves--;    
+        if(_reduceMoves) moves--;
 
-        if(points >= goal)
+
+        foreach (Candy candy in _candiesRemoved)
         {
-
+            Debug.Log("Checking the candies");
+            if (candy.candyColor == candiesObjective[0].candyColor && remainingCandies1 < 20)
+            {
+                remainingCandies1++;
+                slider1.SetValue(remainingCandies1);
+                //Debug.Log(remainingCandies1);
+            }
+            else if(candy.candyColor == candiesObjective[1].candyColor && remainingCandies2 < 20)
+            {
+                remainingCandies2++;
+                slider2.SetValue(remainingCandies2);
+                //Debug.Log(remainingCandies2);
+            }
+            else if(candy.candyColor == candiesObjective[2].candyColor && remainingCandies3 < 20)
+            {
+                remainingCandies3++;
+                slider3.SetValue(remainingCandies3);
+                //Debug.Log(remainingCandies3);
+            }
+        }
+        if (remainingCandies1 >= 20 && remainingCandies2 >= 20 && remainingCandies3 >= 20)
+        {
             WinGame();
-            //you've won the game
-            isGameEnded = true;
-
-            //display a victory screen
-            //backgroundPanel.SetActive(true);
-            //victoryPanel.SetActive(true);
             return;
         }
 
-        if(moves == 0) 
-        {
-
-            LoseGame();
-            //you've lost
-            isGameEnded = true;
-
-            //backgroundPanel.SetActive(true);
-            //losePanel.SetActive(true);
-            return;
-        }
+        if (moves == 0) LoseGame();
     }
 
     public void SaveGame()
@@ -112,9 +145,16 @@ public class GameManager : MonoBehaviour
         level = data.level;
     }
 
-    public int CalculateLevel(int level)
+    public void CreateObjective()
     {
-        goal = level;
-        return 3;
+        for(int i = 0; i < 3; i++) 
+        {
+            //random number
+            int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
+
+            candiesObjective[i] = candiesPrefabs[randomIndex];
+            imgSlider[i].sprite = candiesSprites[randomIndex];
+            Debug.Log(candiesObjective[i]);
+        }
     }
 }
