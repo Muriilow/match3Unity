@@ -1,14 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class Board : MonoBehaviour
 {
     //Define the size of the board
-    public int width = 6;
-    public int height = 8;
+    public int width;
+    public int height;
 
     //Define some spacing for the board
     public float spacingX;
@@ -98,12 +99,17 @@ public class Board : MonoBehaviour
             }
         }
         //Its not a match so dont remove and refill the board
-        if(CheckBoard())
+        if (CheckBoard())
         {
             //Debug.Log("We have matches lets recreate the board");
             InitializeBoard();
         }
-        else 
+        else if (IsDeadLocked())
+        {
+            Debug.LogError("acabou a possibilidade de match na criacao");
+            InitializeBoard();
+        }
+        else
         {
             CreateBackground();
         }
@@ -223,7 +229,13 @@ public class Board : MonoBehaviour
                 }
             }
         }
+        //Its possible to do a match now?
 
+        if (IsDeadLocked())
+        {
+            Debug.LogError("acabou a possibilidade de match");
+            InitializeBoard();
+        }
         return hasMatched;
     }
 
@@ -432,7 +444,7 @@ public class Board : MonoBehaviour
         //If we don´t have a candy currently selected, then set the candy I just clicked to my selectedCandy
         if(selectedCandy == null)
         {
-            Debug.Log(_candy);
+            //Debug.Log(_candy);
             selectedCandy = _candy;
         }
         //If we select the same candy twice selectedCandy = null 
@@ -560,7 +572,7 @@ public class Board : MonoBehaviour
 
             //Destroy the candy
             Destroy(candy.gameObject);
-
+            candiesToDestroy.Remove(candy.gameObject);
             backgroundTiles[_xIndex, _yIndex] = new BackgroundTile(true, null);
 
 
@@ -628,13 +640,16 @@ public class Board : MonoBehaviour
     {
         int index = FindIndexOfLowestNull(x);
         //How mucn we need to go down
-        int locationToMoveTo = 8 - index;
+        int locationToMoveTo = height - index;
 
         //Debug.Log("About to spawn a candy, ideally i'd like to put it in the index of: " + index + " and the x pos is:" + x );
 
         //Get a random candy
         int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length); 
         GameObject newCandy = Instantiate(candiesPrefabs[randomIndex], new Vector2(x - spacingX, height - spacingY), Quaternion.identity);
+
+        //If the board need to be reseted this new cnady will be destroyed
+        candiesToDestroy.Add(newCandy);
 
         //Setting the parent
         newCandy.transform.SetParent(candyParent.transform);
@@ -654,7 +669,7 @@ public class Board : MonoBehaviour
     private int FindIndexOfLowestNull(int x)
     {
         int lowestNull = 99;
-        for(int y = 7; y >= 0; y--)
+        for(int y = height - 1; y >= 0; y--)
         {
             if (backgroundTiles[x, y].candy == null && backgroundTiles[x, y].isUsable == true)
             {
@@ -687,6 +702,101 @@ public class Board : MonoBehaviour
 
     #endregion
 
+    #region DeadLock
+    //Switch every candy on the board
+    private void SwitchCandies(int _x, int _y, Vector2Int _direction)
+    {
+        int otherX = _x + _direction.x;
+        int otherY = _y + _direction.y;
+
+        if (otherX >= 0 && otherX < width && otherY >= 0 && otherY < height)
+        {
+            GameObject temp = backgroundTiles[otherX, otherY].candy;
+            
+            backgroundTiles[otherX, otherY].candy = backgroundTiles[_x, _y].candy;
+            backgroundTiles[_x, _y].candy = temp;
+
+
+        }
+    }
+    //Sorry for this
+    private bool CheckForMatches()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && x < width - 2)
+                {
+                    if (backgroundTiles[x + 1, y].isUsable == true && backgroundTiles[x + 1, y].candy != null &&
+                        backgroundTiles[x + 2, y].isUsable == true && backgroundTiles[x + 2, y].candy != null)
+                    {
+                        Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>();
+                        Candy otherCandy1 = backgroundTiles[x + 1, y].candy.GetComponent<Candy>();
+                        Candy otherCandy2 = backgroundTiles[x + 2, y].candy.GetComponent<Candy>();
+
+                        if (candy.candyColor == otherCandy1.candyColor &&
+                            candy.candyColor == otherCandy2.candyColor)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && y < height - 2)
+                {
+                    if (backgroundTiles[x, y + 1].isUsable == true && backgroundTiles[x, y + 1].candy != null &&
+                        backgroundTiles[x, y + 2].isUsable == true && backgroundTiles[x, y + 2].candy != null)
+                    {
+                        Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>();
+                        Candy otherCandy1 = backgroundTiles[x, y + 1].candy.GetComponent<Candy>();
+                        Candy otherCandy2 = backgroundTiles[x, y + 2].candy.GetComponent<Candy>();
+
+                        if (candy.candyColor == otherCandy1.candyColor &&
+                            candy.candyColor == otherCandy2.candyColor)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+        }
+        return false;
+    }
+    private bool SwitchCheck(int _x, int _y, Vector2Int _direction)
+    {
+        SwitchCandies(_x, _y, _direction);
+
+        if(CheckForMatches())
+        {
+            SwitchCandies(_x, _y, _direction);
+            return true;
+        }
+
+        SwitchCandies(_x, _y, _direction);
+        return false;
+    }
+
+    private bool IsDeadLocked()
+    {
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && x < width - 1)
+                {
+                    if (SwitchCheck(x, y, Vector2Int.right)) return false;
+                }
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && y < height - 1)
+                { 
+                    if (SwitchCheck(x, y, Vector2Int.up)) return false;
+                }
+            }
+        }
+
+        return true; // Is dead locked
+    }
+    #endregion
 }
 
 

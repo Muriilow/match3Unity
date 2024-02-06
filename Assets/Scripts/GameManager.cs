@@ -103,7 +103,7 @@ public class GameManager : MonoBehaviour
 
         foreach (Candy candy in _candiesRemoved)
         {
-            Debug.Log("Checking the candies");
+           //    Debug.Log("Checking the candies");
             if (candy.candyColor == candiesObjective[0].candyColor && remainingCandies1 < 20)
             {
                 remainingCandies1++;
@@ -154,7 +154,7 @@ public class GameManager : MonoBehaviour
 
             candiesObjective[i] = candiesPrefabs[randomIndex];
             imgSlider[i].sprite = candiesSprites[randomIndex];
-            Debug.Log(candiesObjective[i]);
+            //Debug.Log(candiesObjective[i]);
         }
     }
 }
