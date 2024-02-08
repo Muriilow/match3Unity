@@ -22,6 +22,8 @@ public class GameManager : MonoBehaviour
     //Array to get the UI Images for the sldiers
     public UnityEngine.UI.Image[] imgSlider;
 
+    public GameObject[] floatingText; //Reference to the floating text 
+    
     public static GameManager Instance; //static reference
 
     public GameObject backgroundPanel; //Background
@@ -39,8 +41,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TMP_Text pointsTxt;    //Points text displayed in the UI
     [SerializeField] private TMP_Text movesTxt;     //Moves text displayed in the UI
-    [SerializeField] private TMP_Text goalTxt;      //Goal text displayed in the UI
-    [SerializeField] private TMP_Text levelText;    //Level text displayed in the UI
+    [SerializeField] private TMP_Text levelTxt;    //Level text displayed in the UI
 
     //Reference to the sliders and it images
     public ObjectiveSlider slider1;
@@ -68,14 +69,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        pointsTxt.text = "Points: " + points.ToString();
-        movesTxt.text = "Moves: " + moves.ToString();
-        goalTxt.text = "Goal: " + goal.ToString();
-
+        pointsTxt.text = points.ToString();
+        movesTxt.text = moves.ToString();
+        levelTxt.text = level.ToString();
     }
 
     //Attached to a button to change scene when winning 
-    public void WinGame()
+    private void WinGame()
     {
         isGameEnded = true;
         level++;
@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
         //SceneManager.LoadScene("Main");
     }
 
-    public void LoseGame()
+    private void LoseGame()
     {
         isGameEnded = true;            
         //backgroundPanel.SetActive(true);
@@ -96,6 +96,23 @@ public class GameManager : MonoBehaviour
     // && adds the points to our score 
     public void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
     {
+        if (_reduceMoves)
+        {
+            for (int i = 0; i < _candiesRemoved.Count; i++)
+            {
+                if (_candiesRemoved[i].wasSelected)
+                {
+                    CreateFloatingText(_pointsToGain, _candiesRemoved[i].transform.position);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            int random = UnityEngine.Random.Range(0, _candiesRemoved.Count);
+            CreateFloatingText(_pointsToGain, _candiesRemoved[random].transform.position);
+        }
+        
         points += _pointsToGain;
 
         if(_reduceMoves) moves--;
@@ -145,7 +162,7 @@ public class GameManager : MonoBehaviour
         level = data.level;
     }
 
-    public void CreateObjective()
+    private void CreateObjective()
     {
         for(int i = 0; i < 3; i++) 
         {
@@ -156,5 +173,13 @@ public class GameManager : MonoBehaviour
             imgSlider[i].sprite = candiesSprites[randomIndex];
             //Debug.Log(candiesObjective[i]);
         }
+    }
+
+    public void CreateFloatingText(int _points, Vector3 _position)
+    {
+        int random = UnityEngine.Random.Range(0, 3);
+        GameObject text = Instantiate(floatingText[random], _position, Quaternion.identity);
+        
+        text.GetComponent<TextMeshPro>().text = _points.ToString();
     }
 }

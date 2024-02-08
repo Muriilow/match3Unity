@@ -14,6 +14,11 @@ public class Board : MonoBehaviour
     //Define some spacing for the board
     public float spacingX;
     public float spacingY;
+    private Vector3 firstClick;
+    private Vector3 lastClick;
+    private float swipeAngle;
+    private int multiplier = 1;
+
 
     public GameObject candiesBoardGO;
     //layoutArray
@@ -32,7 +37,6 @@ public class Board : MonoBehaviour
 
     [SerializeField] private GameObject[] superCandiesPrefabs;
 
-
     //The candy being selected 
     [SerializeField] private Candy selectedCandy;
 
@@ -47,8 +51,14 @@ public class Board : MonoBehaviour
 
     [SerializeField] private GameObject background;
 
+    //If I clcked at a candy collider, do the SelectCandy method  
+    private void Update()
+    {
+        CheckClick();
+    }
+
     #region Initialize the game
-    
+
 
     //Unity method that initialize the code when the obj with this script is called
     private void Awake()
@@ -72,7 +82,7 @@ public class Board : MonoBehaviour
 
         for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++) 
+            for (int x = 0; x < width; x++)
             {
                 //pos for the candy 
                 Vector2 position = new Vector2(x - spacingX, y - spacingY);
@@ -84,7 +94,7 @@ public class Board : MonoBehaviour
                 {
                     backgroundTiles[x, y] = new BackgroundTile(false, null);
                 }
-                else 
+                else
                 {
                     //random number
                     int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
@@ -95,7 +105,7 @@ public class Board : MonoBehaviour
                     backgroundTiles[x, y] = new BackgroundTile(true, candy);
                     candiesToDestroy.Add(candy);
                 }
-                
+
             }
         }
         //Its not a match so dont remove and refill the board
@@ -117,16 +127,16 @@ public class Board : MonoBehaviour
 
     private void DestroyCandies()
     {
-        if(candiesToDestroy != null)
+        if (candiesToDestroy != null)
         {
-            foreach(GameObject candy in candiesToDestroy)
+            foreach (GameObject candy in candiesToDestroy)
             {
                 Destroy(candy);
             }
             candiesToDestroy.Clear();
         }
     }
-     
+
     private void CreateBackground()
     {
         for (int y = 0; y < height; y++)
@@ -147,26 +157,6 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Matching Logic
-    //If I clcked at a candy collider, do the SelectCandy method  
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-            if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
-            {
-                //If we're already moving a piece
-                if (isProcessingMove) return;
-
-                Candy candy = hit.collider.gameObject.GetComponent<Candy>();
-                // Debug.Log("I have clicked a candy it is:" + candy.gameObject);
-
-                SelectCandy(candy);
-            }
-        }
-    }
     //Check the board to look for a match
     public bool CheckBoard()
     {
@@ -182,9 +172,9 @@ public class Board : MonoBehaviour
         candiesToRemove.Clear();
 
         //Set every candy to not matched
-        foreach(BackgroundTile backgroundTile in backgroundTiles)
+        foreach (BackgroundTile backgroundTile in backgroundTiles)
         {
-            if(backgroundTile.candy != null)
+            if (backgroundTile.candy != null)
             {
                 backgroundTile.candy.GetComponent<Candy>().isMatched = false;
             }
@@ -199,16 +189,16 @@ public class Board : MonoBehaviour
                 if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null)
                 {
                     //Then proceed to get candy class in tile
-                    Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>(); 
-
+                    Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>();
+                    candy.wasSelected = false;
                     //Ensure its not matched
-                    if(!candy.isMatched)
+                    if (!candy.isMatched)
                     {
                         //For every candy check for connections, will return a class that have the connected candies and the direction of the match
-                        MatchResult matchedCandies= IsConnected(candy);
+                        MatchResult matchedCandies = IsConnected(candy);
 
                         //If the list inside the class MatchResult returned by the IsConnected method have more than 3 candys
-                        if(matchedCandies.connectedCandies.Count >= 3)
+                        if (matchedCandies.connectedCandies.Count >= 3)
                         {
                             //Take the class inside matchesCandies var and put in the method supermatch to see if has a super match
                             MatchResult superMatchedCandies = SuperMatch(matchedCandies);
@@ -295,7 +285,7 @@ public class Board : MonoBehaviour
                 //Do we have 2 or more extra matches.
                 if (extraConnectedCandies.Count >= 2)
                 {
-                   // Debug.Log("I have a super Vertical Match");
+                    // Debug.Log("I have a super Vertical Match");
                     extraConnectedCandies.AddRange(_matchedResults.connectedCandies);
 
                     //we've made a super match - retunr a new matchresult of type super
@@ -316,7 +306,7 @@ public class Board : MonoBehaviour
     }
 
     //Is connected with the candies of same type
-    MatchResult IsConnected(Candy candy) 
+    MatchResult IsConnected(Candy candy)
     {
         //Creating a list of candies connected 
         List<Candy> connectedCandies = new();
@@ -333,9 +323,9 @@ public class Board : MonoBehaviour
         CheckDirection(candy, new Vector2Int(-1, 0), connectedCandies);
 
         //Does the list have 3 candies?
-        if(connectedCandies.Count == 3)
+        if (connectedCandies.Count == 3)
         {
-           // Debug.Log("I have a normal horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
+            // Debug.Log("I have a normal horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
             //Return the class that i've create below, and this class is going to collect the list of candies connected and the direction of the match
             return new MatchResult
             {
@@ -344,7 +334,7 @@ public class Board : MonoBehaviour
             };
         }
         //Checking for more than 3 (Long horizontal match)
-        else if(connectedCandies.Count > 3)
+        else if (connectedCandies.Count > 3)
         {
             //Debug.Log("I have a long horizontal match, the color of my match is: " + connectedCandies[0].candyColor);
 
@@ -380,7 +370,7 @@ public class Board : MonoBehaviour
 
         else if (connectedCandies.Count > 3)
         {
-           // Debug.Log("I have a long vertical match, the color of my match is: " + connectedCandies[0].candyColor);
+            // Debug.Log("I have a long vertical match, the color of my match is: " + connectedCandies[0].candyColor);
 
             return new MatchResult
             {
@@ -389,7 +379,7 @@ public class Board : MonoBehaviour
             };
         }
         //if we had no matches
-        else 
+        else
         {
             //Return the class that i've create below, and this class is going to collect the list of candies connected (0) and the direction of the match (none)
             return new MatchResult
@@ -439,22 +429,23 @@ public class Board : MonoBehaviour
 
     #region Swapping candies
     //Select a candy
-    public void SelectCandy(Candy _candy) 
+    public void SelectCandy(Candy _candy)
     {
         //If we don´t have a candy currently selected, then set the candy I just clicked to my selectedCandy
-        if(selectedCandy == null)
+        if (selectedCandy == null)
         {
-            //Debug.Log(_candy);
             selectedCandy = _candy;
+            _candy.isClicked = true;
         }
         //If we select the same candy twice selectedCandy = null 
-        else if (selectedCandy == _candy) 
+        else if (selectedCandy == _candy)
         {
             selectedCandy = null;
+            _candy.isClicked = false;
         }
         //If selectedCandy is not null and its not in the current position, attempt a swap 
         //selectedCandy back to null 
-        else if(selectedCandy != _candy) 
+        else if (selectedCandy != _candy)
         {
             SwapCandy(selectedCandy, _candy);
             selectedCandy = null;
@@ -463,9 +454,14 @@ public class Board : MonoBehaviour
 
     //Swap a candy  - logic
     private void SwapCandy(Candy _currentCandy, Candy _targetCandy)
-    {   
+    {
+        _currentCandy.isClicked = false;
         //if its not adjacent dont do anything
-        if(!IsAdjacent(_currentCandy, _targetCandy)) { return; }
+        if (!IsAdjacent(_currentCandy, _targetCandy))
+        {
+            return;
+        }
+
 
         //DoSwap
         DoSwap(_currentCandy, _targetCandy);
@@ -508,8 +504,10 @@ public class Board : MonoBehaviour
         //Wait for some seconds
         yield return new WaitForSeconds(0.3f);
 
-        if(CheckBoard())
+        if (CheckBoard())
         {
+            _targetCandy.wasSelected = true;
+            _currentCandy.wasSelected = true;
             //Start coroutine to process the matches in our turn
             StartCoroutine(ProcessTurnOnMatchedBoard(true, false));
         }
@@ -629,7 +627,7 @@ public class Board : MonoBehaviour
         }
 
         //If we've hit the top of the board without finding a candy 
-        if(y + yOffset == height)
+        if (y + yOffset == height)
         {
             //Debug.Log("I have reached the top of the board without finding a candy at the x location of:" + x + "and y: " + y);
             SpawnCandyAtTop(x);
@@ -645,7 +643,7 @@ public class Board : MonoBehaviour
         //Debug.Log("About to spawn a candy, ideally i'd like to put it in the index of: " + index + " and the x pos is:" + x );
 
         //Get a random candy
-        int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length); 
+        int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
         GameObject newCandy = Instantiate(candiesPrefabs[randomIndex], new Vector2(x - spacingX, height - spacingY), Quaternion.identity);
 
         //If the board need to be reseted this new cnady will be destroyed
@@ -669,7 +667,7 @@ public class Board : MonoBehaviour
     private int FindIndexOfLowestNull(int x)
     {
         int lowestNull = 99;
-        for(int y = height - 1; y >= 0; y--)
+        for (int y = height - 1; y >= 0; y--)
         {
             if (backgroundTiles[x, y].candy == null && backgroundTiles[x, y].isUsable == true)
             {
@@ -681,20 +679,20 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Points
-    
+
     private int CalculatePoints(bool _multiplyPoints)
     {
         int points = 0;
 
         foreach (Candy candyToRemove in candiesToRemove)
         {
-            points += 100;
+            int randomNumber = UnityEngine.Random.Range(09, 19);
+            points += 100 + randomNumber;
         }
 
-        if (_multiplyPoints)
-        {
-            points *= 2;
-        }
+        if (_multiplyPoints) multiplier *= 2;
+        else multiplier = 1;
+        points *= multiplier;
 
         Debug.Log("I made " + points + " points");
         return points;
@@ -712,7 +710,7 @@ public class Board : MonoBehaviour
         if (otherX >= 0 && otherX < width && otherY >= 0 && otherY < height)
         {
             GameObject temp = backgroundTiles[otherX, otherY].candy;
-            
+
             backgroundTiles[otherX, otherY].candy = backgroundTiles[_x, _y].candy;
             backgroundTiles[_x, _y].candy = temp;
 
@@ -767,7 +765,7 @@ public class Board : MonoBehaviour
     {
         SwitchCandies(_x, _y, _direction);
 
-        if(CheckForMatches())
+        if (CheckForMatches())
         {
             SwitchCandies(_x, _y, _direction);
             return true;
@@ -779,16 +777,16 @@ public class Board : MonoBehaviour
 
     private bool IsDeadLocked()
     {
-        for(int x = 0; x < width; x++)
+        for (int x = 0; x < width; x++)
         {
-            for(int y = 0; y < height; y++)
+            for (int y = 0; y < height; y++)
             {
                 if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && x < width - 1)
                 {
                     if (SwitchCheck(x, y, Vector2Int.right)) return false;
                 }
                 if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && y < height - 1)
-                { 
+                {
                     if (SwitchCheck(x, y, Vector2Int.up)) return false;
                 }
             }
@@ -797,11 +795,32 @@ public class Board : MonoBehaviour
         return true; // Is dead locked
     }
     #endregion
+
+    #region Controls
+    private void CheckClick()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+
+            if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
+            {
+                //If we're already moving a piece
+                if (isProcessingMove) return;
+
+                Candy candy = hit.collider.gameObject.GetComponent<Candy>();
+                // Debug.Log("I have clicked a candy it is:" + candy.gameObject);
+                SelectCandy(candy);
+            }
+        }
+    }
+    #endregion
 }
 
 
 
-//To get easy to read the match result
+    //To get easy to read the match result
 public class MatchResult
 {
     public List<Candy> connectedCandies;

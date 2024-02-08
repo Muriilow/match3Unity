@@ -11,7 +11,11 @@ public class Candy : MonoBehaviour
     public int yIndex;
 
     //is it matched?
-    public bool isMatched;
+    public bool isMatched; //Check if its in a match 
+
+    public bool wasSelected; //Check if the candy is gonna show up the points
+
+    public bool isClicked; //Check if the candy clicked at the candy 
 
     //where it is right now
     //private Vector2 currentPos;
@@ -34,6 +38,17 @@ public class Candy : MonoBehaviour
         yIndex = y;
     }
 
+    public void Update()
+    {
+        if (isClicked) 
+        {
+            GetComponent<SpriteRenderer>().color = Color.green;
+        }
+        else 
+        {
+            GetComponent<SpriteRenderer>().color = Color.white;
+        }
+    }
     //MoveToTarget
     public void MoveToTarget(Vector2 _targetPos)
     {
