@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,9 +13,6 @@ public class Board : MonoBehaviour
     //Define some spacing for the board
     public float spacingX;
     public float spacingY;
-    private Vector3 firstClick;
-    private Vector3 lastClick;
-    private float swipeAngle;
     private int multiplier = 1;
 
 
