@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
 
+    public Board board;
     //Get a reference to our candies prefabs
     [SerializeField] private Candy[] candiesPrefabs;
 
@@ -45,11 +46,11 @@ public class GameManager : MonoBehaviour
 
     //Reference to the sliders and it images
     public ObjectiveSlider slider1;
-
     public ObjectiveSlider slider2;
     public ObjectiveSlider slider3;
 
     public bool isGameEnded;
+    public bool IsPaused;
 
     private void Awake()
     {
@@ -182,4 +183,17 @@ public class GameManager : MonoBehaviour
         
         text.GetComponent<TextMeshPro>().text = _points.ToString();
     }
+
+    #region Pause
+
+    public void PauseGame()
+    {
+        IsPaused = true;
+    }
+
+    public void ResumeGame()
+    {
+        IsPaused = false;
+    }
+    #endregion
 }

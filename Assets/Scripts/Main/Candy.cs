@@ -24,7 +24,31 @@ public class Candy : MonoBehaviour
 
     //Var to control when the obj is moving 
     public bool isMoving;
+    [SerializeField] private Animator animation;
+    private string animationSelected;
 
+    public void Start()
+    {
+        switch(candyColor)
+        {
+            case CandyColor.PeDeMlk: 
+                animationSelected = "PeDeMlkSelected";
+                break;
+            case CandyColor.Snickers:
+                animationSelected = "SnickersSelected";
+                break;
+            case CandyColor.BolinhoCandy:
+                animationSelected = "BolinhoCandySelected";
+                break;
+            case CandyColor.MentaCandy:
+                animationSelected = "MentaCandySelected";
+                break;
+            case CandyColor.ChocolateTriang:
+                animationSelected = "ChocolateTriangSelected";
+                break;
+        }
+        animation = GetComponent<Animator>();
+    }
     //Constructor
     public Candy(int x, int y)
     {
@@ -42,11 +66,11 @@ public class Candy : MonoBehaviour
     {
         if (isClicked) 
         {
-            GetComponent<SpriteRenderer>().color = Color.green;
+            animation.SetBool("isSelected", true);
         }
         else 
         {
-            GetComponent<SpriteRenderer>().color = Color.white;
+            animation.SetBool("isSelected", false);
         }
     }
     //MoveToTarget
@@ -79,10 +103,9 @@ public class Candy : MonoBehaviour
 
 public enum CandyColor
 {
-    ChocolatePiece,
+    PeDeMlk,
     Snickers,
     ChocolateTriang,
-    WhiteChocolateCircle,
-    WhiteChocolateRect,
-    SpecialCookie
+    MentaCandy,
+    BolinhoCandy
 }

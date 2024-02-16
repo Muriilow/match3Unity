@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7934943268953064044}
   - component: {fileID: 8668561218883513002}
   - component: {fileID: 4776179933315060254}
+  - component: {fileID: 6090081904786756380}
   m_Layer: 0
   m_Name: Snickers
   m_TagString: Untagged
@@ -102,7 +103,10 @@ MonoBehaviour:
   xIndex: 0
   yIndex: 0
   isMatched: 0
+  wasSelected: 0
+  isClicked: 0
   isMoving: 0
+  animation: {fileID: 0}
 --- !u!61 &4776179933315060254
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -120,7 +124,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.9921875, y: 1}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -129,3 +133,24 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.6666667, y: 0.6666667}
   m_EdgeRadius: 0
+--- !u!95 &6090081904786756380
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1930836459113843313}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: d19f5f3046134ab43bde55b709e8ceb4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

@@ -15,7 +15,7 @@ public class Board : MonoBehaviour
     public float spacingY;
     private int multiplier = 1;
 
-
+    public GameManager manager;
     public GameObject candiesBoardGO;
     //layoutArray
     public ArrayLayout arrayLayout;
@@ -157,8 +157,9 @@ public class Board : MonoBehaviour
     public bool CheckBoard()
     {
         //If the game ended do not do matches anymore
-        if (GameManager.Instance.isGameEnded)
+        if (manager.isGameEnded)
             return false;
+
 
         //Debug.Log("Checking Board");
 
@@ -540,7 +541,7 @@ public class Board : MonoBehaviour
         points = CalculatePoints(_multiplyPoints);
 
         //Calculate the points and subtract the moves if necessary 
-        GameManager.Instance.ProcessTurn(points, _subtractMoves, candiesToRemove);
+        manager.ProcessTurn(points, _subtractMoves, candiesToRemove);
 
         //Remove the candies in the list
         RemoveAndRefill(candiesToRemove);
@@ -803,7 +804,7 @@ public class Board : MonoBehaviour
             if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
             {
                 //If we're already moving a piece
-                if (isProcessingMove) return;
+                if (isProcessingMove || manager.IsPaused) return;
 
                 Candy candy = hit.collider.gameObject.GetComponent<Candy>();
                 // Debug.Log("I have clicked a candy it is:" + candy.gameObject);
