@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class Board : MonoBehaviour
 {
@@ -31,8 +32,6 @@ public class Board : MonoBehaviour
     //Get a reference to our candies prefabs
     [SerializeField] private GameObject[] candiesPrefabs;
 
-    [SerializeField] private GameObject[] superCandiesPrefabs;
-
     //The candy being selected 
     [SerializeField] private Candy selectedCandy;
 
@@ -51,11 +50,10 @@ public class Board : MonoBehaviour
     private void Update()
     {
         CheckClick();
+        //BackgroundColor();
     }
 
     #region Initialize the game
-
-
     //Unity method that initialize the code when the obj with this script is called
     private void Awake()
     {
@@ -73,7 +71,7 @@ public class Board : MonoBehaviour
         backgroundTiles = new BackgroundTile[width, height];
 
         //Variables that control where should the candies be placed
-        spacingX = (float)(width - 1) / 2 - 2; //2.5
+        spacingX = (float)(width - 1) / 2 - 3; //-0.5
         spacingY = (float)(height - 1) / 2; //3.5
 
         for (int y = 0; y < height; y++)
@@ -115,10 +113,6 @@ public class Board : MonoBehaviour
             Debug.LogError("acabou a possibilidade de match na criacao");
             InitializeBoard();
         }
-        else
-        {
-            CreateBackground();
-        }
     }
 
     private void DestroyCandies()
@@ -133,25 +127,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void CreateBackground()
-    {
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                Vector3 position = new Vector3(x - spacingX, y - spacingY, 0);
-
-                if (backgroundTiles[x, y].isUsable)
-                {
-                    Instantiate(background, position, Quaternion.identity);
-                }
-
-            }
-        }
-    }
-
     #endregion
-
     #region Matching Logic
     //Check the board to look for a match
     public bool CheckBoard()
@@ -221,6 +197,7 @@ public class Board : MonoBehaviour
         if (IsDeadLocked())
         {
             Debug.LogError("acabou a possibilidade de match");
+
             InitializeBoard();
         }
         return hasMatched;
@@ -255,7 +232,6 @@ public class Board : MonoBehaviour
                         connectedCandies = extraConnectedCandies,
                         direction = MatchDirection.Super
                     };
-
                     return match;
                 }
             }
@@ -423,7 +399,6 @@ public class Board : MonoBehaviour
     }
 
     #endregion
-
     #region Swapping candies
     //Select a candy
     public void SelectCandy(Candy _candy)
@@ -459,9 +434,12 @@ public class Board : MonoBehaviour
             return;
         }
 
+        if(_currentCandy != null && _targetCandy != null)
+        {
+            //DoSwap
+            DoSwap(_currentCandy, _targetCandy);
+        }
 
-        //DoSwap
-        DoSwap(_currentCandy, _targetCandy);
 
         isProcessingMove = true;
         //StartCourotine ProcessMatches, have I got a match? If yes do one thing if no do another thing 
@@ -472,6 +450,7 @@ public class Board : MonoBehaviour
     //Do swap
     private void DoSwap(Candy _currentCandy, Candy _targetCandy)
     {
+
         //storing the location of the first candy 
         GameObject temp = backgroundTiles[_currentCandy.xIndex, _currentCandy.yIndex].candy;
 
@@ -507,12 +486,12 @@ public class Board : MonoBehaviour
             _currentCandy.wasSelected = true;
             //Start coroutine to process the matches in our turn
             StartCoroutine(ProcessTurnOnMatchedBoard(true, false));
-        }
+        }   
         else
         {
             DoSwap(_currentCandy, _targetCandy);
         }
-
+        
         isProcessingMove = false;
     }
     //isAdjecent
@@ -522,7 +501,6 @@ public class Board : MonoBehaviour
     }
     //ProcessMatches
     #endregion
-
     #region Cascading Candies
 
     //When we got a match and after that another match, this one was automatic so the player did nothing to happen
@@ -547,7 +525,7 @@ public class Board : MonoBehaviour
         RemoveAndRefill(candiesToRemove);
 
 
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(0.1f);
 
         //Check teh board again, if we have a match start this method again but doenst subtract the move and multiply the points
         if (CheckBoard())
@@ -569,8 +547,6 @@ public class Board : MonoBehaviour
             Destroy(candy.gameObject);
             candiesToDestroy.Remove(candy.gameObject);
             backgroundTiles[_xIndex, _yIndex] = new BackgroundTile(true, null);
-
-
         }
 
         for (int x = 0; x < width; x++)
@@ -583,7 +559,6 @@ public class Board : MonoBehaviour
 
                     //Debug.Log("The location X: " + x + " Y: " + y + " is empty, attempting to refill it");
                     RefillCandy(x, y);
-
                 }
             }
         }
@@ -674,7 +649,6 @@ public class Board : MonoBehaviour
         return lowestNull;
     }
     #endregion
-
     #region Points
 
     private int CalculatePoints(bool _multiplyPoints)
@@ -691,27 +665,68 @@ public class Board : MonoBehaviour
         else multiplier = 1;
         points *= multiplier;
 
-        Debug.Log("I made " + points + " points");
+        //Debug.Log("I made " + points + " points");
         return points;
     }
 
     #endregion
-
     #region DeadLock
+    private bool IsDeadLocked()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                //loop trough all the board checking right and up on every candy 
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && x < width - 1)
+                {
+                    if (SwitchCheck(x, y, Vector2Int.right)) return false;
+                }
+                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && y < height - 1)
+                {
+                    if (SwitchCheck(x, y, Vector2Int.up)) return false;
+                }
+            }
+        }
+        //IF the gamemode is fast
+        if (manager.gameMode == 2)
+        {
+            manager.time = manager.storeTime;
+        }
+        return true; // Is dead locked
+    }
+    private bool SwitchCheck(int _x, int _y, Vector2Int _direction)
+    {
+        //Switch the positions 
+        SwitchCandies(_x, _y, _direction);
+
+        //After the change check for matches
+        if (CheckForMatches())
+        {
+            //If we had matches we change the positions back and return true
+            SwitchCandies(_x, _y, _direction);
+            return true;
+        }
+        //If we didnt have a match, change back and return false
+        SwitchCandies(_x, _y, _direction);
+        return false;
+    }
+
     //Switch every candy on the board
     private void SwitchCandies(int _x, int _y, Vector2Int _direction)
     {
+        //OtherX and OtherY is the position of the current candy + the direction we want to switch
         int otherX = _x + _direction.x;
         int otherY = _y + _direction.y;
-
+        //if its inside the boundaries 
         if (otherX >= 0 && otherX < width && otherY >= 0 && otherY < height)
         {
+            //Save the position to this variable to dont lose after the trade
             GameObject temp = backgroundTiles[otherX, otherY].candy;
 
+            //switch the positions
             backgroundTiles[otherX, otherY].candy = backgroundTiles[_x, _y].candy;
             backgroundTiles[_x, _y].candy = temp;
-
-
         }
     }
     //Sorry for this
@@ -721,15 +736,19 @@ public class Board : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
+                //Check on every backgroundTile, and if its usable and have a candy
                 if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && x < width - 2)
                 {
+                    //Check if the candy at the right and the candy after that exists
                     if (backgroundTiles[x + 1, y].isUsable == true && backgroundTiles[x + 1, y].candy != null &&
                         backgroundTiles[x + 2, y].isUsable == true && backgroundTiles[x + 2, y].candy != null)
                     {
+                        //Take the component candy of these 3 background tiles
                         Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>();
                         Candy otherCandy1 = backgroundTiles[x + 1, y].candy.GetComponent<Candy>();
                         Candy otherCandy2 = backgroundTiles[x + 2, y].candy.GetComponent<Candy>();
 
+                        //if all of the 3 candies are the same, itspossible to do a match
                         if (candy.candyColor == otherCandy1.candyColor &&
                             candy.candyColor == otherCandy2.candyColor)
                         {
@@ -737,6 +756,7 @@ public class Board : MonoBehaviour
                         }
                     }
                 }
+                //Same logic but were checking up or down (i dont remember lol)
                 if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && y < height - 2)
                 {
                     if (backgroundTiles[x, y + 1].isUsable == true && backgroundTiles[x, y + 1].candy != null &&
@@ -758,41 +778,7 @@ public class Board : MonoBehaviour
         }
         return false;
     }
-    private bool SwitchCheck(int _x, int _y, Vector2Int _direction)
-    {
-        SwitchCandies(_x, _y, _direction);
-
-        if (CheckForMatches())
-        {
-            SwitchCandies(_x, _y, _direction);
-            return true;
-        }
-
-        SwitchCandies(_x, _y, _direction);
-        return false;
-    }
-
-    private bool IsDeadLocked()
-    {
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && x < width - 1)
-                {
-                    if (SwitchCheck(x, y, Vector2Int.right)) return false;
-                }
-                if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null && y < height - 1)
-                {
-                    if (SwitchCheck(x, y, Vector2Int.up)) return false;
-                }
-            }
-        }
-
-        return true; // Is dead locked
-    }
     #endregion
-
     #region Controls
     private void CheckClick()
     {
@@ -813,6 +799,7 @@ public class Board : MonoBehaviour
         }
     }
     #endregion
+
 }
 
 

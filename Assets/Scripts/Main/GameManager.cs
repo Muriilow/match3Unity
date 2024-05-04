@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Candy[] candiesObjective = new Candy[3];
 
     //Array to get the sprites of candies
-    public Sprite[] candiesSprites;
+    public UnityEngine.UI.Image[] candiesSprites;
 
     //Array to get the UI Images for the sldiers
     public UnityEngine.UI.Image[] imgSlider;
@@ -27,12 +27,16 @@ public class GameManager : MonoBehaviour
     
     public static GameManager Instance; //static reference
 
-    public GameObject backgroundPanel; //Background
-    public GameObject victoryPanel;
-    public GameObject losePanel;
+    public GameObject victoryPanel; //blank gameObject that cotains UI image of victory
+    public GameObject losePanel;    //blank gameObject that cotains UI image of lost
 
-    public int level; //The level we're in needs to be public
-    private int goal; //The amount of points to win
+    [SerializeField] private TextMeshProUGUI timerText;
+    public float storeTime;
+    public  float time;  //time between matches
+
+    public  int levelNormal; //The level we're in needs to be public
+    public  int bestLevelFast; //store our best level
+    public  int levelFast; //The level in the fast gameMode
     private int moves; //The amount of moves left in the level 
     private int points; //The points that we have
 
@@ -49,48 +53,99 @@ public class GameManager : MonoBehaviour
     public ObjectiveSlider slider2;
     public ObjectiveSlider slider3;
 
-    public bool isGameEnded;
+    public int gameMode; 
+    public bool isGameEnded; //If its true the board wont check for matches;
     public bool IsPaused;
+    private bool loseGame = false;
 
     private void Awake()
     {
         Instance = this;
+        loseGame = false;
         LoadGame();
-        Initialize(100000, 100000);
+        Initialize();
         CreateObjective();
-        
+        CheckTime();
     }
 
-    public void Initialize(int _moves, int _goal)
+    public void Initialize()
     {
-        moves = _moves;
-        goal = _goal;
+        if (gameMode == 1)
+        {
+            moves = 40;
+        }
+        else if(gameMode == 2)
+        {
+            PauseGame();
+            levelFast = 1;
+        }
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        if(gameMode == 1)
+        {
+            movesTxt.text = moves.ToString();
+            levelTxt.text = levelNormal.ToString();
+        }
+        else if(gameMode == 2)
+        {
+            if (!IsPaused)
+            {
+                time -= Time.deltaTime;
+            }
+            timerText.text = time.ToString("N2");
+            levelTxt.text = levelFast.ToString();
+
+            if (time <= 0f && !loseGame)
+            {
+                LoseGame();
+                loseGame = true;
+            }
+        }
+
         pointsTxt.text = points.ToString();
-        movesTxt.text = moves.ToString();
-        levelTxt.text = level.ToString();
     }
 
     //Attached to a button to change scene when winning 
     private void WinGame()
-    {
-        isGameEnded = true;
-        level++;
+    {   
+        if(gameMode == 1) 
+        {
+            PauseGame();
+            isGameEnded = true;
+            levelNormal++;
+            victoryPanel.SetActive(true);
+        }
+
+        else if(gameMode == 2)
+        {
+            levelFast++;
+            CheckTime();
+            CreateObjective();
+        }
         SaveGame();
-        //backgroundPanel.SetActive(true);
-        victoryPanel.SetActive(true);
-        //SceneManager.LoadScene("Main");
     }
 
     private void LoseGame()
     {
+        PauseGame();
         isGameEnded = true;            
-        //backgroundPanel.SetActive(true);
-        //losePanel.SetActive(true);
+
+        losePanel.SetActive(true);
+
+        if(gameMode == 2)
+        {
+            if(levelFast > bestLevelFast)
+            {
+                bestLevelFast = levelFast;
+            }
+
+            levelFast = 1;
+        }
+
         SaveGame();
     }
     //Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
@@ -113,12 +168,13 @@ public class GameManager : MonoBehaviour
             int random = UnityEngine.Random.Range(0, _candiesRemoved.Count);
             CreateFloatingText(_pointsToGain, _candiesRemoved[random].transform.position);
         }
-        
-        points += _pointsToGain;
-
         if(_reduceMoves) moves--;
 
-
+        if(gameMode == 2)
+        {
+            time = storeTime;
+        }
+        points += _pointsToGain;
         foreach (Candy candy in _candiesRemoved)
         {
            //    Debug.Log("Checking the candies");
@@ -146,8 +202,6 @@ public class GameManager : MonoBehaviour
             WinGame();
             return;
         }
-
-        if (moves == 0) LoseGame();
     }
 
     public void SaveGame()
@@ -160,19 +214,66 @@ public class GameManager : MonoBehaviour
     {
         GameManagerData data = SaveSystem.LoadPlayer();
         Debug.Log("carreguei uhul");
-        level = data.level;
+        levelNormal = data.level;
     }
 
     private void CreateObjective()
     {
         for(int i = 0; i < 3; i++) 
         {
+            //Reseting the var that contains the number of matched cndies of the same type
+            remainingCandies1 = 0;
+            remainingCandies2 = 0;
+            remainingCandies3 = 0;
+            //reseting the value of the slider too
+            slider1.SetValue(remainingCandies1);
+            slider2.SetValue(remainingCandies2);
+            slider2.SetValue(remainingCandies3);
+
             //random number
             int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
 
+            //Set what candy needs to be destroyed to win the game(ignore this)
             candiesObjective[i] = candiesPrefabs[randomIndex];
-            imgSlider[i].sprite = candiesSprites[randomIndex];
-            //Debug.Log(candiesObjective[i]);
+
+            //Set the image of the candie to the blank square (CandiesdPrefabs are the game object prefabs, candiesSprites are Ui Image, both arrays have the same order)
+            imgSlider[i].sprite = candiesSprites[randomIndex].sprite;
+            //Debug.Log(candiesObjective[i]);   
+        }
+    }
+    private void CheckTime()
+    {
+        if (gameMode == 2)
+        {
+            if (levelFast <= 5) //Between levels 1 and 5
+            {
+                storeTime = 15f;
+                time = storeTime;
+            }
+
+            else if (5 < levelFast && levelFast <= 10) //Between levels 6 and 10
+            {
+                storeTime = 12f;
+                time = storeTime;
+            }
+
+            else if (10 < levelFast && levelFast <= 15) //Between levels 11 and 15
+            {
+                storeTime = 9f;
+                time = storeTime;
+            }
+
+            else if (15 < levelFast && levelFast <= 20) //Between levels 16 and 20
+            {
+                storeTime = 7f;
+                time = storeTime;
+            }
+
+            else                                        //After level 20
+            {
+                storeTime = 5f;
+                time = storeTime;
+            }
         }
     }
 

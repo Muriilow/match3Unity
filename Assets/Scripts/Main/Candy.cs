@@ -24,7 +24,7 @@ public class Candy : MonoBehaviour
 
     //Var to control when the obj is moving 
     public bool isMoving;
-    [SerializeField] private Animator animation;
+    [SerializeField] private new Animator animation;
     private string animationSelected;
 
     public void Start()
@@ -82,7 +82,7 @@ public class Candy : MonoBehaviour
     private IEnumerator MoveCoroutine(Vector2 _targetPos)
     {
         isMoving = true;
-        float duration = 0.1f;
+        float duration = 0.2f;
 
         Vector2 startPosition = transform.position;
         float elaspedTime = 0f;

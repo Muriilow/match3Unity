@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class BackgroundTile : MonoBehaviour
+public class BackgroundTile
 {
     /*Boolean value that allow us to create non retangular shapes
     by determing if this tile can or cannot have a candy*/

@@ -6,9 +6,11 @@ using UnityEngine;
 public class GameManagerData
 {
     public int level;
+    public int bestFastLevel;
 
     public GameManagerData(GameManager gameManager)
     {
-        level = gameManager.level;
+        level = gameManager.levelNormal;
+        bestFastLevel = gameManager.bestLevelFast;
     }
 }
