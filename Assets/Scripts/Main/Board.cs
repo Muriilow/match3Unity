@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
+using Utilities;
+using UnityEngine.XR;
 
 public class Board : MonoBehaviour
 {
@@ -45,6 +47,7 @@ public class Board : MonoBehaviour
     [SerializeField] public List<Candy> candiesToRemove = new();
 
     [SerializeField] private GameObject background;
+    [SerializeField] private int gameMode;
 
     //If I clcked at a candy collider, do the SelectCandy method  
     private void Update()
@@ -79,8 +82,9 @@ public class Board : MonoBehaviour
             for (int x = 0; x < width; x++)
             {
                 //pos for the candy 
-                Vector2 position = new Vector2(x - spacingX, y - spacingY);
+                Vector2 position;
 
+                position = new Vector2(x - spacingX, y - spacingY);
 
                 /*If I checked the buttons in the inspector of this obj, the tile with the
                 same pos as the inspector button will not work and will not have a candy on it*/
@@ -90,12 +94,15 @@ public class Board : MonoBehaviour
                 }
                 else
                 {
-                    //random number
-                    int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
+                    int randomIndex;
+                    GameObject candy;
 
-                    GameObject candy = Instantiate(candiesPrefabs[randomIndex], position, Quaternion.identity);
+                    randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
+
+                    candy = Instantiate(candiesPrefabs[randomIndex], position, Quaternion.identity);
                     candy.GetComponent<Candy>().SetIndicies(x, y);
                     candy.transform.SetParent(candyParent.transform);
+
                     backgroundTiles[x, y] = new BackgroundTile(true, candy);
                     candiesToDestroy.Add(candy);
                 }
@@ -132,19 +139,14 @@ public class Board : MonoBehaviour
     //Check the board to look for a match
     public bool CheckBoard()
     {
-        //If the game ended do not do matches anymore
         if (manager.isGameEnded)
             return false;
-
-
-        //Debug.Log("Checking Board");
 
         bool hasMatched = false;
 
         //cleaning the list created by the class that have the candies matched
         candiesToRemove.Clear();
 
-        //Set every candy to not matched
         foreach (BackgroundTile backgroundTile in backgroundTiles)
         {
             if (backgroundTile.candy != null)
@@ -162,33 +164,11 @@ public class Board : MonoBehaviour
                 if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null)
                 {
                     //Then proceed to get candy class in tile
-                    Candy candy = backgroundTiles[x, y].candy.GetComponent<Candy>();
+                    Candy candy;
+
+                    candy = backgroundTiles[x, y].candy.GetComponent<Candy>();
                     candy.wasSelected = false;
-                    //Ensure its not matched
-                    if (!candy.isMatched)
-                    {
-                        //For every candy check for connections, will return a class that have the connected candies and the direction of the match
-                        MatchResult matchedCandies = IsConnected(candy);
-
-                        //If the list inside the class MatchResult returned by the IsConnected method have more than 3 candys
-                        if (matchedCandies.connectedCandies.Count >= 3)
-                        {
-                            //Take the class inside matchesCandies var and put in the method supermatch to see if has a super match
-                            MatchResult superMatchedCandies = SuperMatch(matchedCandies);
-
-                            //put them in a list that we've created early in this function 
-                            candiesToRemove.AddRange(superMatchedCandies.connectedCandies);
-
-                            //And for each candy set their variable isMatched to true 
-                            foreach (Candy cand in superMatchedCandies.connectedCandies)
-                            {
-                                cand.isMatched = true;
-                            }
-
-                            //Yeah we've found 1 match at least
-                            hasMatched = true;
-                        }
-                    }
+                    hasMatched = CheckCandy(hasMatched, candy);
                 }
             }
         }
@@ -199,6 +179,33 @@ public class Board : MonoBehaviour
             Debug.LogError("acabou a possibilidade de match");
 
             InitializeBoard();
+        }
+        return hasMatched;
+    }
+
+    private bool CheckCandy(bool hasMatched, Candy candy)
+    {
+        if (!candy.isMatched)
+        {
+            //For every candy check for connections, return a class that have the connected candies and the direction of the match
+            MatchResult matchedCandies;
+            MatchResult superMatchedCandies;
+
+            matchedCandies = IsConnected(candy);
+
+            if (matchedCandies.connectedCandies.Count >= 3)
+            {
+                //Take the class inside matchesCandies var and put in the method supermatch to see if has a super match
+                 superMatchedCandies = SuperMatch(matchedCandies);
+
+                candiesToRemove.AddRange(superMatchedCandies.connectedCandies);
+
+                foreach (Candy cand in superMatchedCandies.connectedCandies)
+                {
+                    cand.isMatched = true;
+                }
+                return true;
+            }
         }
         return hasMatched;
     }
@@ -374,7 +381,7 @@ public class Board : MonoBehaviour
         int y = candy.yIndex + direction.y;
 
         //Check that we're within the boundaries of the board
-        while (x >= 0 && x < width && y >= 0 && y < height)
+        while (CheckBoundaries(x, y))
         {
             if (backgroundTiles[x, y].isUsable == true && backgroundTiles[x, y].candy != null)
             {
@@ -636,6 +643,7 @@ public class Board : MonoBehaviour
         newCandy.GetComponent<Candy>().MoveToTarget(newTargetPos);
     }
 
+    //Finds the lowest part of the grid
     private int FindIndexOfLowestNull(int x)
     {
         int lowestNull = 99;
@@ -688,26 +696,23 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        //IF the gamemode is fast
-        if (manager.gameMode == 2)
-        {
-            manager.time = manager.storeTime;
-        }
+
+        manager.DeadLocked();
+
         return true; // Is dead locked
     }
+
+    //Switch two candies to see if forms a match, if not, revert the actions
     private bool SwitchCheck(int _x, int _y, Vector2Int _direction)
     {
-        //Switch the positions 
         SwitchCandies(_x, _y, _direction);
 
-        //After the change check for matches
         if (CheckForMatches())
         {
-            //If we had matches we change the positions back and return true
             SwitchCandies(_x, _y, _direction);
             return true;
         }
-        //If we didnt have a match, change back and return false
+
         SwitchCandies(_x, _y, _direction);
         return false;
     }
@@ -716,20 +721,23 @@ public class Board : MonoBehaviour
     private void SwitchCandies(int _x, int _y, Vector2Int _direction)
     {
         //OtherX and OtherY is the position of the current candy + the direction we want to switch
-        int otherX = _x + _direction.x;
-        int otherY = _y + _direction.y;
-        //if its inside the boundaries 
-        if (otherX >= 0 && otherX < width && otherY >= 0 && otherY < height)
-        {
-            //Save the position to this variable to dont lose after the trade
-            GameObject temp = backgroundTiles[otherX, otherY].candy;
+        int otherX; 
+        int otherY;
+        GameObject temp;
 
-            //switch the positions
+        otherY = _y + _direction.y;
+        otherX = _x + _direction.x;
+
+        if (CheckBoundaries(otherX, otherY))
+        {
+            temp = backgroundTiles[otherX, otherY].candy;
+
             backgroundTiles[otherX, otherY].candy = backgroundTiles[_x, _y].candy;
             backgroundTiles[_x, _y].candy = temp;
         }
     }
-    //Sorry for this
+
+    //Check if theres any possible match in the board
     private bool CheckForMatches()
     {
         for (int x = 0; x < width; x++)
@@ -784,41 +792,28 @@ public class Board : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            RaycastHit2D hit;
+            Ray ray;
+            Candy candy;
+
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            hit = Physics2D.Raycast(ray.origin, ray.direction);
 
             if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
             {
                 //If we're already moving a piece
-                if (isProcessingMove || manager.IsPaused) return;
+                if (isProcessingMove || manager.IsPaused) 
+                    return;
 
-                Candy candy = hit.collider.gameObject.GetComponent<Candy>();
-                // Debug.Log("I have clicked a candy it is:" + candy.gameObject);
+                candy = hit.collider.gameObject.GetComponent<Candy>();
+
                 SelectCandy(candy);
             }
         }
     }
     #endregion
 
-}
-
-
-
-    //To get easy to read the match result
-public class MatchResult
-{
-    public List<Candy> connectedCandies;
-    public MatchDirection direction;
-}
-
-public enum MatchDirection
-{
-    Vertical,
-    Horizontal,
-    LongVertical,
-    LongHorizontal,
-    Super,
-    None
+    public bool CheckBoundaries(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
 }
 
 //Criar uma possivel funcao que vai pegar a classe formada apos o metodo superMatch candies

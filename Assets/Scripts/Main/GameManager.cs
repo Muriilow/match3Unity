@@ -6,9 +6,13 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
+using Unity.VisualScripting;
+using UnityEngine.XR;
 
 public class GameManager : MonoBehaviour
 {
+    public float StoreTime { get; set; }
+    public float TimeFast { get; set; }
 
     public Board board;
     //Get a reference to our candies prefabs
@@ -30,173 +34,98 @@ public class GameManager : MonoBehaviour
     public GameObject victoryPanel; //blank gameObject that cotains UI image of victory
     public GameObject losePanel;    //blank gameObject that cotains UI image of lost
 
-    [SerializeField] private TextMeshProUGUI timerText;
-    public float storeTime;
-    public  float time;  //time between matches
+
 
     public  int levelNormal; //The level we're in needs to be public
-    public  int bestLevelFast; //store our best level
-    public  int levelFast; //The level in the fast gameMode
-    private int moves; //The amount of moves left in the level 
+    [SerializeField] protected int moves; //The amount of moves left in the level 
     private int points; //The points that we have
 
     [SerializeField] private int remainingCandies1 = 0;
     [SerializeField] private int remainingCandies2 = 0;
     [SerializeField] private int remainingCandies3 = 0;
 
-    [SerializeField] private TMP_Text pointsTxt;    //Points text displayed in the UI
-    [SerializeField] private TMP_Text movesTxt;     //Moves text displayed in the UI
-    [SerializeField] private TMP_Text levelTxt;    //Level text displayed in the UI
+    //Text in the UI 
+    [SerializeField] protected TMP_Text pointsTxt;
+    [SerializeField] protected TMP_Text movesTxt;
+    [SerializeField] protected TMP_Text levelTxt;
 
     //Reference to the sliders and it images
     public ObjectiveSlider slider1;
     public ObjectiveSlider slider2;
     public ObjectiveSlider slider3;
 
-    public int gameMode; 
     public bool isGameEnded; //If its true the board wont check for matches;
     public bool IsPaused;
-    private bool loseGame = false;
+    protected bool loseGame;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         Instance = this;
         loseGame = false;
-        LoadGame();
-        Initialize();
+        //LoadGame();
         CreateObjective();
-        CheckTime();
-    }
-
-    public void Initialize()
-    {
-        if (gameMode == 1)
-        {
-            moves = 40;
-        }
-        else if(gameMode == 2)
-        {
-            PauseGame();
-            levelFast = 1;
-        }
-
     }
 
     // Update is called once per frame
-    void Update()
+    protected virtual void Update()
     {
-        if(gameMode == 1)
-        {
-            movesTxt.text = moves.ToString();
-            levelTxt.text = levelNormal.ToString();
-        }
-        else if(gameMode == 2)
-        {
-            if (!IsPaused)
-            {
-                time -= Time.deltaTime;
-            }
-            timerText.text = time.ToString("N2");
-            levelTxt.text = levelFast.ToString();
-
-            if (time <= 0f && !loseGame)
-            {
-                LoseGame();
-                loseGame = true;
-            }
-        }
-
         pointsTxt.text = points.ToString();
     }
 
     //Attached to a button to change scene when winning 
-    private void WinGame()
+    protected virtual void WinGame()
     {   
-        if(gameMode == 1) 
-        {
-            PauseGame();
-            isGameEnded = true;
-            levelNormal++;
-            victoryPanel.SetActive(true);
-        }
-
-        else if(gameMode == 2)
-        {
-            levelFast++;
-            CheckTime();
-            CreateObjective();
-        }
-        SaveGame();
+        //SaveGame();
     }
 
-    private void LoseGame()
+    protected virtual void LoseGame()
     {
         PauseGame();
         isGameEnded = true;            
 
         losePanel.SetActive(true);
 
-        if(gameMode == 2)
-        {
-            if(levelFast > bestLevelFast)
-            {
-                bestLevelFast = levelFast;
-            }
-
-            levelFast = 1;
-        }
-
-        SaveGame();
+        //SaveGame();
     }
+
     //Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
     // && adds the points to our score 
-    public void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
+    public virtual void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
     {
-        if (_reduceMoves)
-        {
-            for (int i = 0; i < _candiesRemoved.Count; i++)
-            {
-                if (_candiesRemoved[i].wasSelected)
-                {
-                    CreateFloatingText(_pointsToGain, _candiesRemoved[i].transform.position);
-                    break;
-                }
-            }
-        }
-        else
-        {
-            int random = UnityEngine.Random.Range(0, _candiesRemoved.Count);
-            CreateFloatingText(_pointsToGain, _candiesRemoved[random].transform.position);
-        }
-        if(_reduceMoves) moves--;
+        int random;
+        bool wasTextCreated;
 
-        if(gameMode == 2)
-        {
-            time = storeTime;
-        }
+        wasTextCreated = false;
+        random = UnityEngine.Random.Range(0, _candiesRemoved.Count);
         points += _pointsToGain;
+
         foreach (Candy candy in _candiesRemoved)
         {
-           //    Debug.Log("Checking the candies");
+            if (candy.wasSelected && !wasTextCreated)
+            {
+                wasTextCreated = true;
+                CreateFloatingText(_pointsToGain, candy.transform.position);
+            }
+
             if (candy.candyColor == candiesObjective[0].candyColor && remainingCandies1 < 20)
             {
                 remainingCandies1++;
                 slider1.SetValue(remainingCandies1);
-                //Debug.Log(remainingCandies1);
             }
             else if(candy.candyColor == candiesObjective[1].candyColor && remainingCandies2 < 20)
             {
                 remainingCandies2++;
                 slider2.SetValue(remainingCandies2);
-                //Debug.Log(remainingCandies2);
             }
             else if(candy.candyColor == candiesObjective[2].candyColor && remainingCandies3 < 20)
             {
                 remainingCandies3++;
-                slider3.SetValue(remainingCandies3);
-                //Debug.Log(remainingCandies3);
-            }
+                slider3.SetValue(remainingCandies3);;
+            }   
         }
+        if(!wasTextCreated)
+            CreateFloatingText(_pointsToGain, _candiesRemoved[random].transform.position);
+
         if (remainingCandies1 >= 20 && remainingCandies2 >= 20 && remainingCandies3 >= 20)
         {
             WinGame();
@@ -204,20 +133,20 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SaveGame()
-    {
-        SaveSystem.SavePlayer(this);
-        Debug.Log("Salvei uhul");
-    }
+    //public void SaveGame()
+    //{
+    //    SaveSystem.SavePlayer(this);
+    //    Debug.Log("Salvei uhul");
+    //}
 
-    public void LoadGame()
-    {
-        GameManagerData data = SaveSystem.LoadPlayer();
-        Debug.Log("carreguei uhul");
-        levelNormal = data.level;
-    }
+    //public void LoadGame()
+    //{
+    //    GameManagerData data = SaveSystem.LoadPlayer();
+    //    Debug.Log("carreguei uhul");
+    //    levelNormal = data.level;
+    //}
 
-    private void CreateObjective()
+    protected void CreateObjective()
     {
         for(int i = 0; i < 3; i++) 
         {
@@ -232,7 +161,7 @@ public class GameManager : MonoBehaviour
 
             //random number
             int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
-
+            Debug.Log(randomIndex);
             //Set what candy needs to be destroyed to win the game(ignore this)
             candiesObjective[i] = candiesPrefabs[randomIndex];
 
@@ -241,41 +170,7 @@ public class GameManager : MonoBehaviour
             //Debug.Log(candiesObjective[i]);   
         }
     }
-    private void CheckTime()
-    {
-        if (gameMode == 2)
-        {
-            if (levelFast <= 5) //Between levels 1 and 5
-            {
-                storeTime = 15f;
-                time = storeTime;
-            }
 
-            else if (5 < levelFast && levelFast <= 10) //Between levels 6 and 10
-            {
-                storeTime = 12f;
-                time = storeTime;
-            }
-
-            else if (10 < levelFast && levelFast <= 15) //Between levels 11 and 15
-            {
-                storeTime = 9f;
-                time = storeTime;
-            }
-
-            else if (15 < levelFast && levelFast <= 20) //Between levels 16 and 20
-            {
-                storeTime = 7f;
-                time = storeTime;
-            }
-
-            else                                        //After level 20
-            {
-                storeTime = 5f;
-                time = storeTime;
-            }
-        }
-    }
 
     public void CreateFloatingText(int _points, Vector3 _position)
     {
@@ -297,4 +192,10 @@ public class GameManager : MonoBehaviour
         IsPaused = false;
     }
     #endregion
+
+    public virtual void DeadLocked()
+    {
+        return; 
+    }
 }
+

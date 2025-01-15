@@ -16,22 +16,22 @@ public class Button : MonoBehaviour
      */
     public void ClickOnPlay()
     {
-        StartCoroutine(DoTransition(4));
+        StartCoroutine(DoTransition("MenuGame"));
         //SceneManager.LoadSceneAsync("Main");
     }
     public void ClickOnNormal()
     {
-        StartCoroutine(DoTransition(1));
+        StartCoroutine(DoTransition("MainNormalGame"));
         //SceneManager.LoadSceneAsync("Main");
     }
     public void ClickOnFast()
     {
-        StartCoroutine(DoTransition(3));
+        StartCoroutine(DoTransition("MainFastGame"));
     }
 
     public void BackToMenu()
     {
-        StartCoroutine(DoTransition(0));
+        StartCoroutine(DoTransition("MainMenu"));
         //SceneManager.LoadSceneAsync("MainMenu");
     }
 
@@ -46,13 +46,13 @@ public class Button : MonoBehaviour
     }
 
 
-    IEnumerator DoTransition(int levelIndex)
+    IEnumerator DoTransition(string levelName)
     {
         //Set the parameter start to true
         transition.SetTrigger("Start");
         //Waiting for 1 second
         yield return new WaitForSeconds(transitionTime);
         //Loading the scene
-        SceneManager.LoadScene(levelIndex);
+        SceneManager.LoadScene(levelName);
     }
 }
