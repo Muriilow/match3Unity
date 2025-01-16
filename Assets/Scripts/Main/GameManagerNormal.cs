@@ -47,6 +47,23 @@ public class GameManagerNormal : GameManager
         base.ProcessTurn(_pointsToGain, _reduceMoves, _candiesRemoved);
     }
 
+    #region Save system
+
+    //public void Save(ref NormalSaveData data)
+    //{
+    //    data.levelNormal = levelNormal;
+    //}
+
+    //public void Load(ref NormalSaveData data)
+    //{
+    //    levelNormal = data.levelNormal;
+    //}
+    #endregion
 }
 
+//[System.Serializable]
+//public struct NormalSaveData
+//{
+//    public int levelNormal;
+//}
 

@@ -3,20 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
-using UnityEngine.UI;
-using Unity.VisualScripting;
-using UnityEngine.XR;
-using System.Security.Cryptography.X509Certificates;
+using Systems.Persistence;
 
-public class GameManagerFast : GameManager
+public class GameManagerFast : GameManager, IBind<FastData>
 {
     [SerializeField]
     private TextMeshProUGUI timerText;
+    
+    [field: SerializeField]
+    public string Id { get; set; } = "GameManagerFast";
+    
+    [SerializeField]
+    FastData data;
+
     public int BestLevelFast { get; set; }
+    
     private int LevelFast { get; set; }
 
+    public void Bind(FastData data)
+    {
+        this.data = data;
+        this.data.Id = data.Id;
+        BestLevelFast = data.bestLevelFast;
+    }
     protected override void Awake()
     {
         base.Awake();
@@ -94,10 +103,10 @@ public class GameManagerFast : GameManager
         }
     }
 
-    public override void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
+    public override void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
     {
         TimeFast = StoreTime;
-        base.ProcessTurn(_pointsToGain, _reduceMoves, _candiesRemoved);
+        base.ProcessTurn(pointsToGain, reduceMoves, candiesRemoved);
     }
 
     public override void DeadLocked()
@@ -111,9 +120,19 @@ public class GameManagerFast : GameManager
             BestLevelFast = LevelFast;
         }
 
+        data.lastLevelFast = LevelFast;
+        data.bestLevelFast = BestLevelFast;
+        
         LevelFast = 1;
 
         base.LoseGame();
-
     }
+}
+
+[Serializable]
+public class FastData : ISaveable
+{
+    [field: SerializeField] public string Id { get; set; }
+    public int bestLevelFast;
+    public int lastLevelFast;
 }

@@ -1,16 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Systems.Persistence;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UIElements;
-using UnityEngine.UI;
-using Unity.VisualScripting;
-using UnityEngine.XR;
-
+using Systems.Persistence;
 public class GameManager : MonoBehaviour
 {
+    public SaveSystem saveSystem;
+    protected string gameName;
     public float StoreTime { get; set; }
     public float TimeFast { get; set; }
 
@@ -62,7 +61,10 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
         loseGame = false;
-        //LoadGame();
+
+        gameName = saveSystem.gameData.Name;
+        saveSystem.LoadGame(gameName);
+        
         CreateObjective();
     }
 
@@ -84,8 +86,8 @@ public class GameManager : MonoBehaviour
         isGameEnded = true;            
 
         losePanel.SetActive(true);
-
-        //SaveGame();
+        
+        saveSystem.SaveGame();
     }
 
     //Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
@@ -132,19 +134,6 @@ public class GameManager : MonoBehaviour
             return;
         }
     }
-
-    //public void SaveGame()
-    //{
-    //    SaveSystem.SavePlayer(this);
-    //    Debug.Log("Salvei uhul");
-    //}
-
-    //public void LoadGame()
-    //{
-    //    GameManagerData data = SaveSystem.LoadPlayer();
-    //    Debug.Log("carreguei uhul");
-    //    levelNormal = data.level;
-    //}
 
     protected void CreateObjective()
     {
@@ -197,5 +186,7 @@ public class GameManager : MonoBehaviour
     {
         return; 
     }
+
 }
+
 
