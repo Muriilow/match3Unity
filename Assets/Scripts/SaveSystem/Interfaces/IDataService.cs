@@ -7,7 +7,7 @@ namespace Systems.Persistence
     public interface IDataService
     {
         void Save(GameData data, bool overwrite = true);
-        GameData Load(string name);
+        GameData Load(GameData data);
         void Delete(string name);
         void DeleteAll();
         IEnumerable<string> ListSaves();

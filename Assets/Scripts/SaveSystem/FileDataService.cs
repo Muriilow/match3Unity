@@ -29,22 +29,24 @@ namespace Systems.Persistence
         {
             string fileLocation = GetPathToFile(data.Name);
 
-            if(!overwrite && File.Exists(fileLocation)) 
-            {
+            if (!overwrite && File.Exists(fileLocation))
                 throw new IOException($"The file '{data.Name}.{fileExtesion}' already exists and cannot be overwritten.");
-            }
 
             File.WriteAllText(fileLocation, serializer.Serialize(data));
         }
 
-        public GameData Load(string name)
+        public GameData Load(GameData data)
         {
-            string fileLocation = GetPathToFile(name);
-
-            if(!File.Exists(fileLocation))
+            string name;
+            string fileLocation;
+            
+            name = data.Name;
+            fileLocation = GetPathToFile(name);
+            
+            if (!File.Exists(fileLocation))
             {
-                return null;
-                //throw new ArgumentException($"No persisted GameData with name '{name}'");
+                Debug.LogError($"The file '{name}.{fileExtesion}' does not exist.");
+                Save(data);
             }
 
             return serializer.Deserialize<GameData>(File.ReadAllText(fileLocation));

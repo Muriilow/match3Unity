@@ -9,7 +9,7 @@ using Systems.Persistence;
 public class GameManager : MonoBehaviour
 {
     public SaveSystem saveSystem;
-    protected string gameName;
+    
     public float StoreTime { get; set; }
     public float TimeFast { get; set; }
 
@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
 
     public  int levelNormal; //The level we're in needs to be public
     [SerializeField] protected int moves; //The amount of moves left in the level 
-    private int points; //The points that we have
+    protected int points; //The points that we have
 
     [SerializeField] private int remainingCandies1 = 0;
     [SerializeField] private int remainingCandies2 = 0;
@@ -62,8 +62,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
         loseGame = false;
 
-        gameName = saveSystem.gameData.Name;
-        saveSystem.LoadGame(gameName);
+        saveSystem = FindObjectOfType<SaveSystem>();
         
         CreateObjective();
     }
@@ -77,7 +76,7 @@ public class GameManager : MonoBehaviour
     //Attached to a button to change scene when winning 
     protected virtual void WinGame()
     {   
-        //SaveGame();
+
     }
 
     protected virtual void LoseGame()
@@ -179,6 +178,11 @@ public class GameManager : MonoBehaviour
     public void ResumeGame()
     {
         IsPaused = false;
+    }
+
+    public virtual void QuitGame()
+    {
+        
     }
     #endregion
 

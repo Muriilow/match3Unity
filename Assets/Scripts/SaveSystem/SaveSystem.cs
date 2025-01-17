@@ -6,22 +6,6 @@ using UnityEngine.SceneManagement;
 
 namespace Systems.Persistence
 {
-    [Serializable]
-    public class GameData
-    {
-        public string Name;
-        public FastData fastData;
-    }
-    public interface ISaveable
-    {
-        string Id { get; set; }
-    }
-
-    public interface IBind<TData> where TData : ISaveable
-    {
-        string Id { get; set; }
-        void Bind(TData data);
-    }
     public class SaveSystem : PersistentSingleton<SaveSystem>
     {
         [SerializeField] public GameData gameData;
@@ -46,9 +30,12 @@ namespace Systems.Persistence
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            //if (scene.name == "Menu")
-                //return;
+            LoadGame();
+            if (scene.name != "NormalGame" && scene.name != "FastGame")
+                return;
+                
             Bind<GameManagerFast, FastData>(gameData.fastData);
+            Bind<GameManagerNormal, NormalData>(gameData.normalData);
         }
 
         void Bind<T, TData>(TData data) where T : MonoBehaviour, IBind<TData> where TData : ISaveable, new()
@@ -62,43 +49,46 @@ namespace Systems.Persistence
                 data = new TData { Id = entity.Id };
             }
             entity.Bind(data);
-            
+           Debug.Log(data.Id); 
         }
-        public void SaveGame()
+        public void SaveGame(bool overwrite = true)
         {
-            dataService.Save(gameData);
+            dataService.Save(gameData, overwrite);
         }
 
-        public void LoadGame(string gameName)
+        public void LoadGame()
         {
-            if (gameName == null || dataService.Load(gameName) == null)
-            {
-                gameData = NewGame();
-                gameData = dataService.Load(gameData.Name);
-                return;
-            }
+            gameData = dataService.Load(gameData);
             
-            gameData = dataService.Load(gameName);
-
             //TODO: If the data is null, handle it. 
         }
 
-        public GameData NewGame()
+        public void NewGame()
         {
             gameData = new GameData {
-                Name = "Game",
+                Name = "Candy",
             };
-            
-            return gameData;
         }
         public void DeleteGame(string gameName)
         {
             dataService.Delete(gameName);
         }
+    }
+    [Serializable]
+    public class GameData
+    {
+        public string Name = "Candy";
+        public FastData fastData;
+        public NormalData normalData;
+    }
+    public interface ISaveable
+    {
+        string Id { get; set; }
+    }
 
-        public void ReloadGame()
-        {
-            LoadGame(gameData.Name);
-        }
+    public interface IBind<TData> where TData : ISaveable
+    {
+        string Id { get; set; }
+        void Bind(TData data);
     }
 }

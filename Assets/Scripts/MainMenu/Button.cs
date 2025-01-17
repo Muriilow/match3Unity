@@ -21,12 +21,12 @@ public class Button : MonoBehaviour
     }
     public void ClickOnNormal()
     {
-        StartCoroutine(DoTransition("MainNormalGame"));
+        StartCoroutine(DoTransition("NormalGame"));
         //SceneManager.LoadSceneAsync("Main");
     }
     public void ClickOnFast()
     {
-        StartCoroutine(DoTransition("MainFastGame"));
+        StartCoroutine(DoTransition("FastGame"));
     }
 
     public void BackToMenu()

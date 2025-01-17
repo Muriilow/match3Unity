@@ -9,9 +9,13 @@ public class GameManagerFast : GameManager, IBind<FastData>
 {
     [SerializeField]
     private TextMeshProUGUI timerText;
-    
-    [field: SerializeField]
-    public string Id { get; set; } = "GameManagerFast";
+
+    private string id = "fastMnger";
+    public string Id 
+    {
+        get { return id; }
+        set { id = value; }
+    } 
     
     [SerializeField]
     FastData data;
@@ -23,7 +27,7 @@ public class GameManagerFast : GameManager, IBind<FastData>
     public void Bind(FastData data)
     {
         this.data = data;
-        this.data.Id = data.Id;
+        this.data.Id = Id;
         BestLevelFast = data.bestLevelFast;
     }
     protected override void Awake()
@@ -123,6 +127,7 @@ public class GameManagerFast : GameManager, IBind<FastData>
         data.lastLevelFast = LevelFast;
         data.bestLevelFast = BestLevelFast;
         
+        saveSystem.gameData.fastData = data; 
         LevelFast = 1;
 
         base.LoseGame();

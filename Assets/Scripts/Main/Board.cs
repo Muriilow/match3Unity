@@ -815,8 +815,3 @@ public class Board : MonoBehaviour
 
     public bool CheckBoundaries(int x, int y) => x >= 0 && x < width && y >= 0 && y < height;
 }
-
-//Criar uma possivel funcao que vai pegar a classe formada apos o metodo superMatch candies
-//e checar por a direcao, e quantidade de doces em um if statement 
-//ai dependendo do tipo de match por exemplo super, criar um doce com uma classe que varia da classe doce generica
-//Esse doce vai ser especial e quando entrar em um match vai fazer algo espcifico 
