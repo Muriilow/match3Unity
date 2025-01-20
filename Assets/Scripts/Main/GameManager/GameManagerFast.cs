@@ -4,157 +4,129 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Systems.Persistence;
+using UnityEngine.Serialization;
 
 public class GameManagerFast : GameManager, IBind<FastData>, IPausable
 {
-    [SerializeField]
-    private TextMeshProUGUI timerText;
-
-    [SerializeField] 
-    private GameObject explanationPanel;
-
-    [SerializeField]
-    private GameObject startPanel;
-    private string id = "fastMnger";
-    private bool setPanel = false; 
+    //Time
+    private float _storeTime;
+    private float _timeFast;
+    
+    //Level
+    private int _bestLevelFast;
+    private int _levelFast;
+    
+    private string _id = "fastMnger";
+    private bool _setPanel = false; 
+    
+    [SerializeField] private GameObject _explanationPanel;
+    [SerializeField] private TextMeshProUGUI _timerText;
+    [SerializeField] private GameObject _startPanel;
+    [SerializeField] private FastData _data;
+    
     public string Id 
     {
-        get { return id; }
-        set { id = value; }
-    } 
-    
-    [SerializeField]
-    FastData data;
+        get => _id;
+        set => _id = value;
+    }
 
-    public int BestLevelFast { get; set; }
-    
-    private int LevelFast { get; set; }
-
+    #region Start Game
+    //Load information saved in the file
     public void Bind(FastData data)
     {
-        this.data = data;
-        this.data.Id = Id;
-        BestLevelFast = data.bestLevelFast;
+        _data = data;
+        _data.Id = Id;
+        _bestLevelFast = data.bestLevelFast;
 
-        if (data.isNew)
+        if(data.isNew)
         {
-            setPanel = true;
+            _setPanel = true;
             data.isNew = false;
         }
     }
+    
     protected override void Awake()
     {
         base.Awake();
 
-        Initialize();
+        PauseGame();
+        _levelFast = 1;
+        
         CheckTime();
     }
 
     public void Start()
     {
-        if(setPanel)
-            explanationPanel.SetActive(true);
+        if(_setPanel)
+            _explanationPanel.SetActive(true);
         else
-            startPanel.SetActive(true);
-    }
-
-    protected override void Update()
-    {
-        if (!IsPaused)
-        {
-            TimeFast -= Time.deltaTime;
-        }
-
-        timerText.text = TimeFast.ToString("N2");
-        levelTxt.text = LevelFast.ToString();
-
-        if (TimeFast <= 0f && !loseGame)
-        {
-            LoseGame();
-            loseGame = true;
-        }
-
-        base.Update();
-    }
-    public void Initialize()
-    {
-        PauseGame();
-        LevelFast = 1;
-    }
-    protected override void WinGame()
-    {
-        LevelFast++;
-        CheckTime();
-        CreateObjective();
-
+            _startPanel.SetActive(true);
     }
 
     private void CheckTime()
     {
-        switch (LevelFast)
+        switch (_levelFast)
         {
             case <= 5:
                 {
-                    StoreTime = 15f;
-                    TimeFast = StoreTime;
+                    _storeTime = 15f;
                     break;
                 }
             case <= 10:
                 {
-                    StoreTime = 12f;
-                    TimeFast = StoreTime;
+                    _storeTime = 12f;
                     break;
                 }
             case <= 15:
                 {
-                    StoreTime = 9f;
-                    TimeFast = StoreTime;
+                    _storeTime = 9f;
                     break;
                 }
             case <= 20:
                 {
-                    StoreTime = 7f;
-                    TimeFast = StoreTime;
+                    _storeTime = 7f;
                     break;
                 }
             default:
                 {
-                    StoreTime = 5f;
-                    TimeFast = StoreTime;
+                    _storeTime = 5f;
                     break;
                 }
         }
-    }
 
-    public override void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
-    {
-        TimeFast = StoreTime;
-        base.ProcessTurn(pointsToGain, reduceMoves, candiesRemoved);
+        _timeFast = _storeTime;
     }
+    #endregion
 
+    #region Win/Lose Game
     public override void DeadLocked()
     {
-        TimeFast = StoreTime;
+        _timeFast = _storeTime;
     }
     protected override void LoseGame()
     {
         PauseGame();
-        LevelFast = 1;
+        _levelFast = 1;
 
         base.LoseGame();
     }
-
-    #region Pause
-
+    protected override void WinGame()
+    {
+        _levelFast++;
+        CheckTime();
+        CreateObjective();
+    }
+    #endregion
     
+    #region Pause
     public void PauseGame()
     {
-       IsPaused = true; 
+       isPaused = true; 
     }
 
     public void ResumeGame()
     {
-        IsPaused = false;
+        isPaused = false;
     }
 
     public void QuitGame()
@@ -165,18 +137,42 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
 
     public void SaveGame()
     {
-        if (LevelFast > BestLevelFast)
+        if (_levelFast > _bestLevelFast)
         {
-            BestLevelFast = LevelFast;
+            _bestLevelFast = _levelFast;
         }
 
-        data.lastLevelFast = LevelFast;
-        data.bestLevelFast = BestLevelFast;
+        _data.lastLevelFast = _levelFast;
+        _data.bestLevelFast = _bestLevelFast;
         
-        saveSystem.gameData.fastData = data; 
+        saveSystem.gameData.fastData = _data; 
+    }
+    #endregion
+    
+    protected override void Update()
+    {
+        if (!isPaused)
+        {
+            _timeFast -= Time.deltaTime;
+        }
+
+        _timerText.text = _timeFast.ToString("N2");
+        levelTxt.text = _levelFast.ToString();
+
+        if (_timeFast <= 0f && !loseGame)
+        {
+            LoseGame();
+            loseGame = true;
+        }
+
+        base.Update();
     }
 
-    #endregion
+    public override void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
+    {
+        _timeFast = _storeTime;
+        base.ProcessTurn(pointsToGain, reduceMoves, candiesRemoved);
+    }
 }
 
 [Serializable]

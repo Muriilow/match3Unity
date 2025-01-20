@@ -6,165 +6,168 @@ using Systems.Persistence;
 using TMPro;
 using UnityEngine;
 using Systems.Persistence;
+using UnityEngine.Serialization;
+
 public abstract class GameManager : MonoBehaviour
 {
-    public SaveSystem saveSystem;
-    
-    public float StoreTime { get; set; }
-    public float TimeFast { get; set; }
+	[SerializeField] private Candy[] _candiesPrefabs;
+	//The array containing the candies that need to be destroyed in order to win the game
+	[SerializeField] private Candy[] _candiesObjective = new Candy[3];
+	
+	[SerializeField] private int _remainingCandies1 = 0;
+	[SerializeField] private int _remainingCandies2 = 0;
+	[SerializeField] private int _remainingCandies3 = 0;
 
-    public Board board;
-    //Get a reference to our candies prefabs
-    [SerializeField] private Candy[] candiesPrefabs;
+	//Text in the UI 
+	[SerializeField] protected TMP_Text pointsTxt;
+	[SerializeField] protected TMP_Text movesTxt;
+	[SerializeField] protected TMP_Text levelTxt;
 
-    //The array containing the candies taht need to be destroyed in order to win the game
-    [SerializeField] private Candy[] candiesObjective = new Candy[3];
+	//Reference to the sliders and it images
+	public ObjectiveSlider slider1;
+	public ObjectiveSlider slider2;
+	public ObjectiveSlider slider3;
 
-    //Array to get the sprites of candies
-    public UnityEngine.UI.Image[] candiesSprites;
+	//Array to get the sprites of candies
+	public UnityEngine.UI.Image[] candiesSprites;
 
-    //Array to get the UI Images for the sldiers
-    public UnityEngine.UI.Image[] imgSlider;
+	//Array to get the UI Images for the sliders
+	public UnityEngine.UI.Image[] imgSlider;
 
-    public GameObject[] floatingText; //Reference to the floating text 
-    
-    public static GameManager Instance; //static reference
+	//reference for the floating text
+	public GameObject[] floatingText;  
+	
+	//Panels of victory or defeat 
+	public GameObject victoryPanel;
+	public GameObject losePanel;
+	
+	public bool isGameEnded;
+	public bool isPaused;
+	
+	//ManagerFast and ManagerNormal could use these vars
+	protected int moves;
+	protected int points;
+	protected SaveSystem saveSystem;
+	protected bool loseGame;
 
-    public GameObject victoryPanel; //blank gameObject that cotains UI image of victory
-    public GameObject losePanel;    //blank gameObject that cotains UI image of lost
+	protected virtual void Update()
+	{
+		pointsTxt.text = points.ToString();
+	}
 
+	private void CreateFloatingText(int floatPoints, Vector3 position)
+	{
+		int random;
+		GameObject text;
+		
+		random = UnityEngine.Random.Range(0, 3);
+		
+		text = Instantiate(floatingText[random], position, Quaternion.identity);
+		text.GetComponent<TextMeshPro>().text = floatPoints.ToString();
+	}
 
+	public abstract void DeadLocked();
+	
+	#region Start Game
+	protected virtual void Awake()
+	{
+		loseGame = false;
 
-    public  int levelNormal; //The level we're in needs to be public
-    [SerializeField] protected int moves; //The amount of moves left in the level 
-    protected int points; //The points that we have
+		saveSystem = FindObjectOfType<SaveSystem>();
+		
+		CreateObjective();
+	}
 
-    [SerializeField] private int remainingCandies1 = 0;
-    [SerializeField] private int remainingCandies2 = 0;
-    [SerializeField] private int remainingCandies3 = 0;
+	protected void CreateObjective()
+	{
+		//Reseting the var that contains the number of matched candies of the same type
+		_remainingCandies1 = 0;
+		_remainingCandies2 = 0;
+		_remainingCandies3 = 0;
+			
+		//resetting the value of the slider too
+		slider1.SetValue(_remainingCandies1);
+		slider2.SetValue(_remainingCandies2);
+		slider2.SetValue(_remainingCandies3);
+		
+		for(int i = 0; i < 3; i++)
+		{
+			int randomIndex;
+			
+			randomIndex = UnityEngine.Random.Range(0, _candiesPrefabs.Length);
+			
+			//Set what candy needs to be destroyed to win the game(ignore this)
+			_candiesObjective[i] = _candiesPrefabs[randomIndex];
+			imgSlider[i].sprite = candiesSprites[randomIndex].sprite;
+		}
+	}
+	#endregion
+	
+	#region Check turns
+	//Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
+	public virtual void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
+	{
+		int random;
+		bool wasTextCreated;
 
-    //Text in the UI 
-    [SerializeField] protected TMP_Text pointsTxt;
-    [SerializeField] protected TMP_Text movesTxt;
-    [SerializeField] protected TMP_Text levelTxt;
+		wasTextCreated = false;
+		random = UnityEngine.Random.Range(0, candiesRemoved.Count);
+		points += pointsToGain;
 
-    //Reference to the sliders and it images
-    public ObjectiveSlider slider1;
-    public ObjectiveSlider slider2;
-    public ObjectiveSlider slider3;
+		//Check if each candy being destroyed is one of the objective candies
+		foreach (Candy candy in candiesRemoved)
+		{
+			if (candy.wasSelected && !wasTextCreated)
+			{
+				wasTextCreated = true;
+				CreateFloatingText(pointsToGain, candy.transform.position);
+			}
 
-    public bool isGameEnded; //If its true the board wont check for matches;
-    protected bool loseGame;
-    public bool IsPaused;
-    
-    protected virtual void Awake()
-    {
-        Instance = this;
-        loseGame = false;
+			CheckCandyColor(candy);
+		}
+		
+		//Create floating text
+		if(!wasTextCreated)
+			CreateFloatingText(pointsToGain, candiesRemoved[random].transform.position);
+		
+		if (_remainingCandies1 >= 20 && _remainingCandies2 >= 20 && _remainingCandies3 >= 20)
+		{
+			WinGame();
+			return;
+		}
+	}
 
-        saveSystem = FindObjectOfType<SaveSystem>();
-        
-        CreateObjective();
-    }
+	private void CheckCandyColor(Candy candy)
+	{
+		if (candy.candyColor == _candiesObjective[0].candyColor && _remainingCandies1 < 20)
+		{
+			_remainingCandies1++;
+			slider1.SetValue(_remainingCandies1);
+		}
+		else if(candy.candyColor == _candiesObjective[1].candyColor && _remainingCandies2 < 20)
+		{
+			_remainingCandies2++;
+			slider2.SetValue(_remainingCandies2);
+		}
+		else if(candy.candyColor == _candiesObjective[2].candyColor && _remainingCandies3 < 20)
+		{
+			_remainingCandies3++;
+			slider3.SetValue(_remainingCandies3);
+		}
+	}
+	#endregion
 
-    // Update is called once per frame
-    protected virtual void Update()
-    {
-        pointsTxt.text = points.ToString();
-    }
+	#region Win/Lose
+	protected abstract void WinGame();
+	protected virtual void LoseGame()
+	{
+		isGameEnded = true;            
 
-    //Attached to a button to change scene when winning 
-    protected abstract void WinGame();
-
-    protected virtual void LoseGame()
-    {
-        isGameEnded = true;            
-
-        losePanel.SetActive(true);
-        
-        saveSystem.SaveGame();
-    }
-
-    //Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
-    // && adds the points to our score 
-    public virtual void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
-    {
-        int random;
-        bool wasTextCreated;
-
-        wasTextCreated = false;
-        random = UnityEngine.Random.Range(0, _candiesRemoved.Count);
-        points += _pointsToGain;
-
-        foreach (Candy candy in _candiesRemoved)
-        {
-            if (candy.wasSelected && !wasTextCreated)
-            {
-                wasTextCreated = true;
-                CreateFloatingText(_pointsToGain, candy.transform.position);
-            }
-
-            if (candy.candyColor == candiesObjective[0].candyColor && remainingCandies1 < 20)
-            {
-                remainingCandies1++;
-                slider1.SetValue(remainingCandies1);
-            }
-            else if(candy.candyColor == candiesObjective[1].candyColor && remainingCandies2 < 20)
-            {
-                remainingCandies2++;
-                slider2.SetValue(remainingCandies2);
-            }
-            else if(candy.candyColor == candiesObjective[2].candyColor && remainingCandies3 < 20)
-            {
-                remainingCandies3++;
-                slider3.SetValue(remainingCandies3);;
-            }   
-        }
-        if(!wasTextCreated)
-            CreateFloatingText(_pointsToGain, _candiesRemoved[random].transform.position);
-
-        if (remainingCandies1 >= 20 && remainingCandies2 >= 20 && remainingCandies3 >= 20)
-        {
-            WinGame();
-            return;
-        }
-    }
-
-    protected void CreateObjective()
-    {
-        for(int i = 0; i < 3; i++) 
-        {
-            //Reseting the var that contains the number of matched cndies of the same type
-            remainingCandies1 = 0;
-            remainingCandies2 = 0;
-            remainingCandies3 = 0;
-            //reseting the value of the slider too
-            slider1.SetValue(remainingCandies1);
-            slider2.SetValue(remainingCandies2);
-            slider2.SetValue(remainingCandies3);
-
-            //random number
-            int randomIndex = UnityEngine.Random.Range(0, candiesPrefabs.Length);
-            Debug.Log(randomIndex);
-            //Set what candy needs to be destroyed to win the game(ignore this)
-            candiesObjective[i] = candiesPrefabs[randomIndex];
-
-            //Set the image of the candie to the blank square (CandiesdPrefabs are the game object prefabs, candiesSprites are Ui Image, both arrays have the same order)
-            imgSlider[i].sprite = candiesSprites[randomIndex].sprite;
-            //Debug.Log(candiesObjective[i]);   
-        }
-    }
-
-
-    public void CreateFloatingText(int _points, Vector3 _position)
-    {
-        int random = UnityEngine.Random.Range(0, 3);
-        GameObject text = Instantiate(floatingText[random], _position, Quaternion.identity);
-        
-        text.GetComponent<TextMeshPro>().text = _points.ToString();
-    }
-
-    public abstract void DeadLocked();
+		losePanel.SetActive(true);
+		
+		saveSystem.SaveGame();
+	}
+	#endregion
 }
 
 

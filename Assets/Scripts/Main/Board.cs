@@ -410,7 +410,7 @@ public class Board : MonoBehaviour
     //Select a candy
     public void SelectCandy(Candy _candy)
     {
-        //If we don´t have a candy currently selected, then set the candy I just clicked to my selectedCandy
+        //If we donï¿½t have a candy currently selected, then set the candy I just clicked to my selectedCandy
         if (selectedCandy == null)
         {
             selectedCandy = _candy;
@@ -802,7 +802,7 @@ public class Board : MonoBehaviour
             if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
             {
                 //If we're already moving a piece
-                if (isProcessingMove || manager.IsPaused) 
+                if (isProcessingMove || manager.isPaused) 
                     return;
 
                 candy = hit.collider.gameObject.GetComponent<Candy>();

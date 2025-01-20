@@ -7,20 +7,23 @@ using Systems.Persistence;
 
 public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
 {
-    private string id = "normalMnger";
-    private int bestLevelNormal;
+    private string _id = "normalMnger";
+	private int _levelNormal;
+    private int _bestLevelNormal;
+    private NormalData _data;
+   
     public string Id 
     {
-        get { return id; }
-        set { id = value; }
+        get => _id;
+        set => _id = value;
     }
 
-    public NormalData data;
+    #region Start Game
     public void Bind(NormalData data)
     {
-        this.data = data;
-        this.data.Id = Id;
-        bestLevelNormal = data.bestLevelNormal;
+        _data = data;
+        _data.Id = Id;
+        _bestLevelNormal = data.bestLevelNormal;
 
         //TODO: Fix this if statement
         //If this is the first save 
@@ -35,43 +38,19 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
             moves = data.moves;
         }
     }
-    protected override void Update()
-    {
-        movesTxt.text = moves.ToString();
-        levelTxt.text = levelNormal.ToString();
-
-        base.Update();
-    }
-    public void Initialize()
-    {
-        moves = 40;
-    }
+    
+    #endregion
+    
+    #region Win/Lose Game
     protected override void WinGame()
     {
         PauseGame();
         isGameEnded = true;
-        levelNormal++;
+        _levelNormal++;
         victoryPanel.SetActive(true);
 
         FinishGame();
         SaveGame();
-    }
-
-    private void SaveGame()
-    {
-        saveSystem.gameData.normalData = data;
-        saveSystem.SaveGame();
-        //TODO: Make a method to return a random number of moves to data.moves
-    }
-
-    private void FinishGame()
-    {
-        if(levelNormal > bestLevelNormal)
-            bestLevelNormal = levelNormal;
-        
-        data.bestLevelNormal = bestLevelNormal;
-        data.points = 0;
-        data.moves = 40;
     }
 
     protected override void LoseGame()
@@ -81,38 +60,66 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
         SaveGame();
         base.LoseGame();
     }
-
-    public override void ProcessTurn(int _pointsToGain, bool _reduceMoves, List<Candy> _candiesRemoved)
+    #endregion
+    
+    #region Save/Load Game
+    private void SaveGame()
     {
-        if (_reduceMoves)
-            moves--;
-        
-        data.moves = moves;
-        
-        base.ProcessTurn(_pointsToGain, _reduceMoves, _candiesRemoved);
+        saveSystem.gameData.normalData = _data;
+        saveSystem.SaveGame();
+        //TODO: Make a method to return a random number of moves to data.moves
     }
 
+    private void FinishGame()
+    {
+        if(_levelNormal > _bestLevelNormal)
+            _bestLevelNormal = _levelNormal;
+        
+        _data.bestLevelNormal = _bestLevelNormal;
+        _data.points = 0;
+        _data.moves = 40;
+    }
+    #endregion
+
+    #region Pause System
     public void PauseGame()
     {
-        IsPaused = true;
+        isPaused = true;
     }
 
     public void ResumeGame()
     {
-        IsPaused = false;
+        isPaused = false;
     }
 
     public void QuitGame()
     {
-        data.moves = moves;
-        data.points = points;
-        data.bestLevelNormal = bestLevelNormal;
+        _data.moves = moves;
+        _data.points = points;
+        _data.bestLevelNormal = _bestLevelNormal;
         SaveGame(); 
     }
-
+    #endregion
+    
     public override void DeadLocked()
     {
         return;
+    }
+    public override void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
+    {
+        if (reduceMoves)
+            moves--;
+        
+        _data.moves = moves;
+        
+        base.ProcessTurn(pointsToGain, reduceMoves, candiesRemoved);
+    }
+    protected override void Update()
+    {
+        movesTxt.text = moves.ToString();
+        levelTxt.text = _levelNormal.ToString();
+
+        base.Update();
     }
 }
 
