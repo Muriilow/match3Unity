@@ -5,12 +5,18 @@ using TMPro;
 using UnityEngine;
 using Systems.Persistence;
 
-public class GameManagerFast : GameManager, IBind<FastData>
+public class GameManagerFast : GameManager, IBind<FastData>, IPausable
 {
     [SerializeField]
     private TextMeshProUGUI timerText;
 
+    [SerializeField] 
+    private GameObject explanationPanel;
+
+    [SerializeField]
+    private GameObject startPanel;
     private string id = "fastMnger";
+    private bool setPanel = false; 
     public string Id 
     {
         get { return id; }
@@ -29,6 +35,12 @@ public class GameManagerFast : GameManager, IBind<FastData>
         this.data = data;
         this.data.Id = Id;
         BestLevelFast = data.bestLevelFast;
+
+        if (data.isNew)
+        {
+            setPanel = true;
+            data.isNew = false;
+        }
     }
     protected override void Awake()
     {
@@ -36,6 +48,14 @@ public class GameManagerFast : GameManager, IBind<FastData>
 
         Initialize();
         CheckTime();
+    }
+
+    public void Start()
+    {
+        if(setPanel)
+            explanationPanel.SetActive(true);
+        else
+            startPanel.SetActive(true);
     }
 
     protected override void Update()
@@ -67,7 +87,6 @@ public class GameManagerFast : GameManager, IBind<FastData>
         CheckTime();
         CreateObjective();
 
-        base.WinGame();
     }
 
     private void CheckTime()
@@ -119,6 +138,33 @@ public class GameManagerFast : GameManager, IBind<FastData>
     }
     protected override void LoseGame()
     {
+        PauseGame();
+        LevelFast = 1;
+
+        base.LoseGame();
+    }
+
+    #region Pause
+
+    
+    public void PauseGame()
+    {
+       IsPaused = true; 
+    }
+
+    public void ResumeGame()
+    {
+        IsPaused = false;
+    }
+
+    public void QuitGame()
+    {
+        SaveGame();
+        saveSystem.SaveGame(); 
+    }
+
+    public void SaveGame()
+    {
         if (LevelFast > BestLevelFast)
         {
             BestLevelFast = LevelFast;
@@ -128,10 +174,9 @@ public class GameManagerFast : GameManager, IBind<FastData>
         data.bestLevelFast = BestLevelFast;
         
         saveSystem.gameData.fastData = data; 
-        LevelFast = 1;
-
-        base.LoseGame();
     }
+
+    #endregion
 }
 
 [Serializable]
@@ -139,5 +184,6 @@ public class FastData : ISaveable
 {
     [field: SerializeField] public string Id { get; set; }
     public int bestLevelFast;
+    public bool isNew = true;
     public int lastLevelFast;
 }

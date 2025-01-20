@@ -6,7 +6,7 @@ using Systems.Persistence;
 using TMPro;
 using UnityEngine;
 using Systems.Persistence;
-public class GameManager : MonoBehaviour
+public abstract class GameManager : MonoBehaviour
 {
     public SaveSystem saveSystem;
     
@@ -54,9 +54,9 @@ public class GameManager : MonoBehaviour
     public ObjectiveSlider slider3;
 
     public bool isGameEnded; //If its true the board wont check for matches;
-    public bool IsPaused;
     protected bool loseGame;
-
+    public bool IsPaused;
+    
     protected virtual void Awake()
     {
         Instance = this;
@@ -74,14 +74,10 @@ public class GameManager : MonoBehaviour
     }
 
     //Attached to a button to change scene when winning 
-    protected virtual void WinGame()
-    {   
-
-    }
+    protected abstract void WinGame();
 
     protected virtual void LoseGame()
     {
-        PauseGame();
         isGameEnded = true;            
 
         losePanel.SetActive(true);
@@ -168,29 +164,7 @@ public class GameManager : MonoBehaviour
         text.GetComponent<TextMeshPro>().text = _points.ToString();
     }
 
-    #region Pause
-
-    public void PauseGame()
-    {
-        IsPaused = true;
-    }
-
-    public void ResumeGame()
-    {
-        IsPaused = false;
-    }
-
-    public virtual void QuitGame()
-    {
-        
-    }
-    #endregion
-
-    public virtual void DeadLocked()
-    {
-        return; 
-    }
-
+    public abstract void DeadLocked();
 }
 
 
