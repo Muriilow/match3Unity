@@ -37,8 +37,13 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
             points = data.points;
             moves = data.moves;
         }
+        
     }
-    
+
+    public void Start()
+    {
+        _levelNormal = _bestLevelNormal;
+    }
     #endregion
     
     #region Win/Lose Game
