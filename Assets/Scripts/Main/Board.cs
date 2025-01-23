@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utilities;
 
 public class Board : MonoBehaviour
 {
+    private const int HighestPos = 99;
     //Define the size of the board
     [SerializeField] private int _width;
     [SerializeField] private int _height;
@@ -24,23 +26,22 @@ public class Board : MonoBehaviour
     [SerializeField] private GameObject _candyParent;
     
     [SerializeField] private Candy _selectedCandy;
-    [SerializeField] private bool _isProcessingMove;
 
     [SerializeField] private GameManager _manager;
     
     private BackgroundTile[,] _tiles;
     
-    [SerializeField] private int _multiplier = 1;
     [SerializeField] private float _waitProcess = 0.3f;
     //List to hold all the candies in the board
     private List<GameObject> _candies = new();
 
-    //If I clicked at a candy collider, do the SelectCandy method  
-    private void Update()
+    private enum Direction
     {
-        CheckClick();
+        Up,
+        Down,
+        Left,
+        Right
     }
-
     #region Initialize the game
     void Start()
     {
@@ -111,7 +112,7 @@ public class Board : MonoBehaviour
     
     #region Matching Logic
     //returns true if we find a match, false otherwise 
-    public bool CheckBoard()
+    private bool CheckBoard()
     {
         if (_manager.isGameEnded)
             return false;
@@ -255,9 +256,9 @@ public class Board : MonoBehaviour
     }
 
     //Check if the candy have connections horizontally or vertically 
-    MatchResult IsConnected(Candy candy)
+    private MatchResult IsConnected(Candy candy)
     {
-        //The color setted in the enum inside the candy script
+        //The color set in the enum inside the candy script
         CandyColor candyColor;
         List<Candy> connectedCandies = new();
 
@@ -351,7 +352,7 @@ public class Board : MonoBehaviour
     #endregion
     #region Swapping candies
     //Check for some variables of the candy to see if the player wants to mark the candy or the contrary 
-    private void SelectCandy(Candy candy)
+    public void SelectCandy(Candy candy)
     {
         if (_selectedCandy == null)
         {
@@ -381,7 +382,7 @@ public class Board : MonoBehaviour
         if(currentCandy != null && targetCandy != null)
             DoSwap(currentCandy, targetCandy);
 
-        _isProcessingMove = true;
+        IsProcessingMove = true;
         StartCoroutine(ProcessMatches(currentCandy, targetCandy));
     }
 
@@ -425,7 +426,7 @@ public class Board : MonoBehaviour
         else
             DoSwap(currentCandy, targetCandy);
         
-        _isProcessingMove = false;
+        IsProcessingMove = false;
     }
 
     private bool IsAdjacent(Candy currentCandy, Candy targetCandy)
@@ -444,14 +445,12 @@ public class Board : MonoBehaviour
     //When we got a match and after that another match, this one was automatic so the player did nothing to happen
     private IEnumerator ProcessMatch(bool subtractMoves, bool multiplyPoints)
     {
-        int points;
 
         //Every candy that is on the list will have the variable asMatched as false
         foreach (Candy candyToRemove in _candiesToRemove)
             candyToRemove.isMatched = false;
 
-        points = CalculatePoints(multiplyPoints);
-        _manager.ProcessTurn(points, subtractMoves, _candiesToRemove);
+        _manager.ProcessTurn(subtractMoves, _candiesToRemove);
 
         //Refill the board
         RemoveAndRefill(_candiesToRemove);
@@ -487,6 +486,9 @@ public class Board : MonoBehaviour
             }
         }
     }
+    
+    //Find the first candy above the current position, and move it down
+    //If there's no candy above the current position spawn one. 
     private void RefillCandy(int x, int y)
     {
         int yOffset;
@@ -513,7 +515,6 @@ public class Board : MonoBehaviour
 
             _tiles[x, y] = _tiles[x, yOffset];
 
-            //Set the location the candy came from to null
             _tiles[x, yOffset] = new BackgroundTile(true, null);
         }
 
@@ -522,6 +523,7 @@ public class Board : MonoBehaviour
             SpawnCandyAtTop(x);
     }
 
+    //Spawn a candy and put it to the lowest position without a candy 
     private void SpawnCandyAtTop(int x)
     {
         int index;
@@ -552,40 +554,21 @@ public class Board : MonoBehaviour
         newCandy.GetComponent<Candy>().MoveToTarget(newTargetPos);
     }
 
-    //Finds the lowest part of the grid
+    //Finds the lowest part of the grid without a candy 
     private int FindIndexOfLowestNull(int x)
     {
-        int lowestNull = 99;
+        int lowestNull = HighestPos;
         
         for (int y = _height - 1; y >= 0; y--)
         {
             if (_tiles[x, y].candy == null && _tiles[x, y].isUsable == true)
                 lowestNull = y;
         }
+        
         return lowestNull;
     }
     #endregion
-    #region Points
 
-    private int CalculatePoints(bool multiplyPoints)
-    {
-        int points = 0;
-
-        foreach (Candy candy in _candiesToRemove)
-        {
-            int randomNum = UnityEngine.Random.Range(09, 19);
-            points += 100 + randomNum;
-        }
-
-        if (multiplyPoints) _multiplier *= 2;
-        else _multiplier = 1;
-        points *= _multiplier;
-
-        //Debug.Log("I made " + points + " points");
-        return points;
-    }
-
-    #endregion
     #region DeadLock
     private bool IsDeadLocked()
     {
@@ -645,81 +628,89 @@ public class Board : MonoBehaviour
         }
     }
 
-    //Check if theres any possible match in the board
+    //Check if there's any possible match in the board return it 
+    //It is important to check for matches without using the CheckBoard(),
+    //because the same can change some properties of the candies 
     private bool CheckForMatches()
     {
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
+                if (HasMatched(x, y, Direction.Right))
+                    return true;
+
+                if (HasMatched(x, y, Direction.Up))
+                    return true;
+            }
+        }
+        
+        return false;
+    }
+
+    //Check for the right or up direction at the current position to 3 consecutive candies
+    private bool HasMatched(int x, int y, Direction dir)
+    {
+        switch (dir)
+        {
+            case Direction.Right:
+            {
                 //Check on every backgroundTile, and if its usable and have a candy
                 if (_tiles[x, y].isUsable == true && _tiles[x, y].candy != null && x < _width - 2)
                 {
                     //Check if the candy at the right and the candy after that exists
-                    if (_tiles[x + 1, y].isUsable == true && _tiles[x + 1, y].candy != null &&
-                        _tiles[x + 2, y].isUsable == true && _tiles[x + 2, y].candy != null)
-                    {
-                        //Take the component candy of these 3 background tiles
-                        Candy candy = _tiles[x, y].candy.GetComponent<Candy>();
-                        Candy otherCandy1 = _tiles[x + 1, y].candy.GetComponent<Candy>();
-                        Candy otherCandy2 = _tiles[x + 2, y].candy.GetComponent<Candy>();
+                    if (CheckRightDir(x, y))
+                        return false;
 
-                        //if all of the 3 candies are the same, itspossible to do a match
-                        if (candy.candyColor == otherCandy1.candyColor &&
-                            candy.candyColor == otherCandy2.candyColor)
-                        {
-                            return true;
-                        }
-                    }
+                    //Take the component candy of these 3 background tiles
+                    Candy candy = _tiles[x, y].candy.GetComponent<Candy>();
+                    Candy otherCandy1 = _tiles[x + 1, y].candy.GetComponent<Candy>();
+                    Candy otherCandy2 = _tiles[x + 2, y].candy.GetComponent<Candy>();
+
+                    //if all the 3 candies are the same, it's possible to do a match
+                    if (candy.candyColor == otherCandy1.candyColor &&
+                        candy.candyColor == otherCandy2.candyColor)
+                        return true;
                 }
-                //Same logic but were checking up or down (i dont remember lol)
+                break;
+            }
+            case Direction.Up:
+            {
+                //Same logic but were checking up or down
                 if (_tiles[x, y].isUsable == true && _tiles[x, y].candy != null && y < _height - 2)
                 {
-                    if (_tiles[x, y + 1].isUsable == true && _tiles[x, y + 1].candy != null &&
-                        _tiles[x, y + 2].isUsable == true && _tiles[x, y + 2].candy != null)
-                    {
-                        Candy candy = _tiles[x, y].candy.GetComponent<Candy>();
-                        Candy otherCandy1 = _tiles[x, y + 1].candy.GetComponent<Candy>();
-                        Candy otherCandy2 = _tiles[x, y + 2].candy.GetComponent<Candy>();
+                    if (CheckUpDir(x, y))
+                        return false;
+                    
+                    Candy candy = _tiles[x, y].candy.GetComponent<Candy>();
+                    Candy otherCandy1 = _tiles[x, y + 1].candy.GetComponent<Candy>();
+                    Candy otherCandy2 = _tiles[x, y + 2].candy.GetComponent<Candy>();
 
-                        if (candy.candyColor == otherCandy1.candyColor &&
-                            candy.candyColor == otherCandy2.candyColor)
-                        {
-                            return true;
-                        }
-                    }
+                    if (candy.candyColor == otherCandy1.candyColor &&
+                        candy.candyColor == otherCandy2.candyColor)
+                        return true;
                 }
+                break;
             }
-
         }
+
         return false;
     }
+
     #endregion
-    #region Controls
-    private void CheckClick()
+
+    public bool IsProcessingMove { get; private set; }
+    private bool CheckBoundaries(int x, int y) => x >= 0 && x < _width && y >= 0 && y < _height;
+    
+    private bool CheckRightDir(int x, int y)
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            RaycastHit2D hit;
-            Ray ray;
-            Candy candy;
-
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-            if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
-            {
-                //If we're already moving a piece
-                if (_isProcessingMove || _manager.isPaused) 
-                    return;
-
-                candy = hit.collider.gameObject.GetComponent<Candy>();
-
-                SelectCandy(candy);
-            }
-        }
+        return !_tiles[x + 1, y].isUsable || _tiles[x + 1, y].candy == null ||
+               !_tiles[x + 2, y].isUsable || _tiles[x + 2, y].candy == null;
     }
-    #endregion
 
-    public bool CheckBoundaries(int x, int y) => x >= 0 && x < _width && y >= 0 && y < _height;
+    private bool CheckUpDir(int x, int y)
+    {
+        return !_tiles[x, y + 1].isUsable || _tiles[x, y + 1].candy == null ||
+               !_tiles[x, y + 2].isUsable || _tiles[x, y + 2].candy == null;
+    }
 }

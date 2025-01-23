@@ -14,6 +14,8 @@ public abstract class GameManager : MonoBehaviour
 	//The array containing the candies that need to be destroyed in order to win the game
 	[SerializeField] private Candy[] _candiesObjective = new Candy[3];
 	
+    [SerializeField] private int _multiplier = 1;
+	
 	[SerializeField] private int _remainingCandies1 = 0;
 	[SerializeField] private int _remainingCandies2 = 0;
 	[SerializeField] private int _remainingCandies3 = 0;
@@ -42,7 +44,6 @@ public abstract class GameManager : MonoBehaviour
 	public GameObject losePanel;
 	
 	public bool isGameEnded;
-	public bool isPaused;
 	
 	//ManagerFast and ManagerNormal could use these vars
 	protected int moves;
@@ -50,6 +51,7 @@ public abstract class GameManager : MonoBehaviour
 	protected SaveSystem saveSystem;
 	protected bool loseGame;
 
+	public bool IsPaused { get; protected set; }
 	protected virtual void Update()
 	{
 		pointsTxt.text = points.ToString();
@@ -105,14 +107,15 @@ public abstract class GameManager : MonoBehaviour
 	
 	#region Check turns
 	//Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
-	public virtual void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
+	public virtual void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved)
 	{
 		int random;
 		bool wasTextCreated;
 
 		wasTextCreated = false;
 		random = UnityEngine.Random.Range(0, candiesRemoved.Count);
-		points += pointsToGain;
+		
+		points += CalculatePoints(reduceMoves, candiesRemoved);
 
 		//Check if each candy being destroyed is one of the objective candies
 		foreach (Candy candy in candiesRemoved)
@@ -120,7 +123,7 @@ public abstract class GameManager : MonoBehaviour
 			if (candy.wasSelected && !wasTextCreated)
 			{
 				wasTextCreated = true;
-				CreateFloatingText(pointsToGain, candy.transform.position);
+				CreateFloatingText(points, candy.transform.position);
 			}
 
 			CheckCandyColor(candy);
@@ -128,7 +131,7 @@ public abstract class GameManager : MonoBehaviour
 		
 		//Create floating text
 		if(!wasTextCreated)
-			CreateFloatingText(pointsToGain, candiesRemoved[random].transform.position);
+			CreateFloatingText(points, candiesRemoved[random].transform.position);
 		
 		if (_remainingCandies1 >= 20 && _remainingCandies2 >= 20 && _remainingCandies3 >= 20)
 		{
@@ -167,6 +170,30 @@ public abstract class GameManager : MonoBehaviour
 		
 		saveSystem.SaveGame();
 	}
+	#endregion
+
+	#region Points
+	
+    private int CalculatePoints(bool reduceMoves, List<Candy> candiesRemoved)
+    {
+        int newPoints = 0;
+
+        foreach (Candy candy in candiesRemoved)
+        {
+            int randomNum = UnityEngine.Random.Range(09, 19);
+            newPoints += 100 + randomNum;
+        }
+
+        if (reduceMoves)
+            _multiplier *= 2;
+        else
+            _multiplier = 1;
+        
+        newPoints *= _multiplier;
+
+        return newPoints;
+    }
+
 	#endregion
 }
 

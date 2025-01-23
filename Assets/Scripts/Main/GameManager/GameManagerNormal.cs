@@ -89,12 +89,12 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
     #region Pause System
     public void PauseGame()
     {
-        isPaused = true;
+        IsPaused = true;
     }
 
     public void ResumeGame()
     {
-        isPaused = false;
+        IsPaused = false;
     }
 
     public void QuitGame()
@@ -110,14 +110,14 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
     {
         return;
     }
-    public override void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
+    public override void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved)
     {
         if (reduceMoves)
             moves--;
         
         _data.moves = moves;
         
-        base.ProcessTurn(pointsToGain, reduceMoves, candiesRemoved);
+        base.ProcessTurn(reduceMoves, candiesRemoved);
     }
     protected override void Update()
     {

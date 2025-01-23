@@ -121,12 +121,12 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
     #region Pause
     public void PauseGame()
     {
-       isPaused = true; 
+       IsPaused = true; 
     }
 
     public void ResumeGame()
     {
-        isPaused = false;
+        IsPaused = false;
     }
 
     public void QuitGame()
@@ -151,7 +151,7 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
     
     protected override void Update()
     {
-        if (!isPaused)
+        if (!IsPaused)
         {
             _timeFast -= Time.deltaTime;
         }
@@ -168,10 +168,10 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
         base.Update();
     }
 
-    public override void ProcessTurn(int pointsToGain, bool reduceMoves, List<Candy> candiesRemoved)
+    public override void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved)
     {
         _timeFast = _storeTime;
-        base.ProcessTurn(pointsToGain, reduceMoves, candiesRemoved);
+        base.ProcessTurn(reduceMoves, candiesRemoved);
     }
 }
 
