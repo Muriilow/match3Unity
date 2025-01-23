@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using Systems.Persistence;
 
@@ -110,14 +108,14 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
     {
         return;
     }
-    public override void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved)
+    public override void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved, bool multiplyPoints)
     {
         if (reduceMoves)
             moves--;
         
         _data.moves = moves;
         
-        base.ProcessTurn(reduceMoves, candiesRemoved);
+        base.ProcessTurn(reduceMoves, candiesRemoved, multiplyPoints);
     }
     protected override void Update()
     {

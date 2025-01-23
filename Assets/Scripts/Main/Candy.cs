@@ -1,87 +1,43 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
-
+using UnityEngine.Serialization;
+using Utilities;
 public class Candy : MonoBehaviour
 {
+    [SerializeField] private Animator _animation;
     public CandyColor candyColor;
+    
     //My x and y position
-    public int xIndex;
-    public int yIndex;
+    public int XIndex { get; set; }
+    public int YIndex { get; set; }
 
-    //is it matched?
-    public bool isMatched; //Check if its in a match 
-
-    public bool wasSelected; //Check if the candy is gonna show up the points
-
-    public bool isClicked; //Check if the candy clicked at the candy 
-
-    //where it is right now
-    //private Vector2 currentPos;
-    //Where do it want to be
-    //private Vector2 targetPos;
-
-    //Var to control when the obj is moving 
-    public bool isMoving;
-    [SerializeField] private new Animator animation;
-    private string animationSelected;
-
+    //If the candy is going to show up the points
+    public bool WasSelected { get; set; }
+    public bool IsMatched { get; set; } 
+    public bool IsClicked { get; set; }
+    public bool IsMoving { get; private set; }
+    
     public void Start()
     {
-        switch(candyColor)
-        {
-            case CandyColor.PeDeMlk: 
-                animationSelected = "PeDeMlkSelected";
-                break;
-            case CandyColor.Snickers:
-                animationSelected = "SnickersSelected";
-                break;
-            case CandyColor.BolinhoCandy:
-                animationSelected = "BolinhoCandySelected";
-                break;
-            case CandyColor.MentaCandy:
-                animationSelected = "MentaCandySelected";
-                break;
-            case CandyColor.ChocolateTriang:
-                animationSelected = "ChocolateTriangSelected";
-                break;
-        }
-        animation = GetComponent<Animator>();
-    }
-    //Constructor
-    public Candy(int x, int y)
-    {
-        xIndex = x;
-        yIndex = y;
-    }
-    //method that does the same as the constructor
-    public void SetIndicies(int x, int y)
-    {
-        xIndex = x;
-        yIndex = y;
+        _animation = GetComponent<Animator>();
     }
 
     public void Update()
     {
-        if (isClicked) 
-        {
-            animation.SetBool("isSelected", true);
-        }
+        if (IsClicked) 
+            _animation.SetBool("isSelected", true);
         else 
-        {
-            animation.SetBool("isSelected", false);
-        }
+            _animation.SetBool("isSelected", false);
     }
     //MoveToTarget
-    public void MoveToTarget(Vector2 _targetPos)
+    public void MoveToTarget(Vector2 targetPos)
     {
-        StartCoroutine(MoveCoroutine(_targetPos));
+        StartCoroutine(MoveCoroutine(targetPos));
     }
     //MoveCoroutine
-    private IEnumerator MoveCoroutine(Vector2 _targetPos)
+    private IEnumerator MoveCoroutine(Vector2 targetPos)
     {
-        isMoving = true;
+        IsMoving = true;
         float duration = 0.2f;
 
         Vector2 startPosition = transform.position;
@@ -91,21 +47,13 @@ public class Candy : MonoBehaviour
         {
             float t = elaspedTime / duration;
 
-            transform.position = Vector2.Lerp(startPosition, _targetPos, t);
+            transform.position = Vector2.Lerp(startPosition, targetPos, t);
             elaspedTime += Time.deltaTime;
 
             yield return null;
         }
-        transform.position = _targetPos;
-        isMoving = false;
+        transform.position = targetPos;
+        IsMoving = false;
     }
 }
 
-public enum CandyColor
-{
-    PeDeMlk,
-    Snickers,
-    ChocolateTriang,
-    MentaCandy,
-    BolinhoCandy
-}

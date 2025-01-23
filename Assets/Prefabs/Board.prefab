@@ -44,12 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94cec2ca7821c7b42bc77389500fa537, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 6
-  height: 8
-  spacingX: 0
-  spacingY: 0
-  candiesBoardGO: {fileID: 3174755450601270058}
-  arrayLayout:
+  _width: 6
+  _height: 8
+  _arrayLayout:
     rows:
     - row: 000000000000
     - row: 000000000000
@@ -59,17 +56,14 @@ MonoBehaviour:
     - row: 000000000000
     - row: 000000000000
     - row: 000000000000
-  candiesToDestroy: []
-  candiesPrefabs:
-  - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
-  - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
+  _candiesToRemove: []
+  _candiesPrefabs:
   - {fileID: 9179460205311072159, guid: 9654719d845f7ee4ba5c05240f71aae9, type: 3}
   - {fileID: 1930836459113843313, guid: f91fdabebf34f0e468ba315a844172ed, type: 3}
+  - {fileID: 8257996884412958848, guid: ab4df0771e76ca84691a1c190134a361, type: 3}
+  - {fileID: 3801064807287773016, guid: 8fb9c8403ced557458b040d91e7f18e0, type: 3}
   - {fileID: 3369709902898234117, guid: 198c5e15b60ab9a40966b56064cbeb3c, type: 3}
-  - {fileID: 2649556833596128382, guid: 490ce70b62990e446851d49ff6416352, type: 3}
-  superCandiesPrefabs: []
-  selectedCandy: {fileID: 0}
-  candyParent: {fileID: 0}
-  isProcessingMove: 0
-  candiesToRemove: []
-  background: {fileID: 0}
+  _candyParent: {fileID: 0}
+  _selectedCandy: {fileID: 0}
+  _manager: {fileID: 0}
+  _waitProcess: 0.3

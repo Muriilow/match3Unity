@@ -1,13 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Systems.Persistence;
 using TMPro;
 using UnityEngine;
-using Systems.Persistence;
-using UnityEngine.Serialization;
-
 public abstract class GameManager : MonoBehaviour
 {
 	[SerializeField] private Candy[] _candiesPrefabs;
@@ -82,7 +76,7 @@ public abstract class GameManager : MonoBehaviour
 
 	protected void CreateObjective()
 	{
-		//Reseting the var that contains the number of matched candies of the same type
+		//Resetting the var that contains the number of matched candies of the same type
 		_remainingCandies1 = 0;
 		_remainingCandies2 = 0;
 		_remainingCandies3 = 0;
@@ -107,37 +101,39 @@ public abstract class GameManager : MonoBehaviour
 	
 	#region Check turns
 	//Check to see if the match was caused by the player (reducing the moves) && if the removed candies are the same type as the ones in the objective
-	public virtual void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved)
+	public virtual void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved, bool multiplyPoints)
 	{
-		int random;
-		bool wasTextCreated;
-
-		wasTextCreated = false;
-		random = UnityEngine.Random.Range(0, candiesRemoved.Count);
+		int newPoints; 
 		
-		points += CalculatePoints(reduceMoves, candiesRemoved);
+		newPoints = CalculatePoints(multiplyPoints, candiesRemoved);
+		points += newPoints; 
 
+		DisplayPoints(candiesRemoved, newPoints);
+
+		if (_remainingCandies1 >= 20 && _remainingCandies2 >= 20 && _remainingCandies3 >= 20)
+			WinGame();
+	}
+
+	private void DisplayPoints(List<Candy> candiesRemoved, int newPoints)
+	{
+		int random = UnityEngine.Random.Range(0, candiesRemoved.Count);
+		bool wasTextCreated = false;
+		
 		//Check if each candy being destroyed is one of the objective candies
 		foreach (Candy candy in candiesRemoved)
 		{
-			if (candy.wasSelected && !wasTextCreated)
+			if (candy.WasSelected && !wasTextCreated)
 			{
 				wasTextCreated = true;
-				CreateFloatingText(points, candy.transform.position);
+				CreateFloatingText(newPoints, candy.transform.position);
 			}
 
 			CheckCandyColor(candy);
 		}
-		
+
 		//Create floating text
 		if(!wasTextCreated)
-			CreateFloatingText(points, candiesRemoved[random].transform.position);
-		
-		if (_remainingCandies1 >= 20 && _remainingCandies2 >= 20 && _remainingCandies3 >= 20)
-		{
-			WinGame();
-			return;
-		}
+			CreateFloatingText(newPoints, candiesRemoved[random].transform.position);
 	}
 
 	private void CheckCandyColor(Candy candy)
@@ -174,7 +170,7 @@ public abstract class GameManager : MonoBehaviour
 
 	#region Points
 	
-    private int CalculatePoints(bool reduceMoves, List<Candy> candiesRemoved)
+    private int CalculatePoints(bool multiplyPoints, List<Candy> candiesRemoved)
     {
         int newPoints = 0;
 
@@ -184,7 +180,7 @@ public abstract class GameManager : MonoBehaviour
             newPoints += 100 + randomNum;
         }
 
-        if (reduceMoves)
+        if (multiplyPoints)
             _multiplier *= 2;
         else
             _multiplier = 1;

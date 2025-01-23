@@ -99,14 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a8101ee4d931142987822395a4c8bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  candyColor: 0
-  xIndex: 0
-  yIndex: 0
-  isMatched: 0
-  wasSelected: 0
-  isClicked: 0
-  isMoving: 0
-  animation: {fileID: 0}
+  _animation: {fileID: 1298169276239654498}
 --- !u!61 &-9183227980337967053
 BoxCollider2D:
   m_ObjectHideFlags: 0

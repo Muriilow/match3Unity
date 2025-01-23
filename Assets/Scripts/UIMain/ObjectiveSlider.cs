@@ -7,8 +7,8 @@ public class ObjectiveSlider : MonoBehaviour
 {
     public Slider slider;
 
-    public void SetValue(int _points)
+    public void SetValue(int points)
     {
-        slider.value = _points;
+        slider.value = points;
     }
 }

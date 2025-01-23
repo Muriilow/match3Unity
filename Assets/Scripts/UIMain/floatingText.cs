@@ -2,17 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class floatingText : MonoBehaviour
+public class FloatingText : MonoBehaviour
 {
-    public Vector3 randomIntensity = new Vector3(4, 2, 0);
     void Start()
     {
         GetComponent<Renderer>().material.color  = new Color(0,0 ,0);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

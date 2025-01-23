@@ -21,5 +21,19 @@ namespace Utilities
         None
     }
 
-
+    public enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
+    }
+    public enum CandyColor
+    {
+        PeDeMlk,
+        Snickers,
+        ChocolateTriang,
+        MentaCandy,
+        BolinhoCandy
+    }
 }

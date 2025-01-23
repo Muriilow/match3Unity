@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -168,10 +167,10 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
         base.Update();
     }
 
-    public override void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved)
+    public override void ProcessTurn(bool reduceMoves, List<Candy> candiesRemoved, bool multiplyPoints)
     {
         _timeFast = _storeTime;
-        base.ProcessTurn(reduceMoves, candiesRemoved);
+        base.ProcessTurn(reduceMoves, candiesRemoved, multiplyPoints);
     }
 }
 

@@ -9,11 +9,11 @@ public class SettingsMenu : MonoBehaviour
 
     public TMPro.TMP_Dropdown resolutionDropDown;
 
-    Resolution[] resolutions;
+    Resolution[] _resolutions;
 
     public void Start()
     {
-        resolutions = Screen.resolutions;
+        _resolutions = Screen.resolutions;
 
         resolutionDropDown.ClearOptions();
 
@@ -21,14 +21,14 @@ public class SettingsMenu : MonoBehaviour
 
         int currentResolutionIndex = 0;
 
-        for(int i = 0; i < resolutions.Length; i++) 
+        for(int i = 0; i < _resolutions.Length; i++) 
         {
-            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + resolutions[i].refreshRate + "hz"; ;
+            string option = _resolutions[i].width + " x " + _resolutions[i].height + " @ " + _resolutions[i].refreshRate + "hz"; ;
             options.Add(option);
 
-            if (resolutions[i].width == Screen.currentResolution.width &&
-                resolutions[i].height == Screen.currentResolution.height &&
-                resolutions[i].refreshRate == Screen.currentResolution.refreshRate)
+            if (_resolutions[i].width == Screen.currentResolution.width &&
+                _resolutions[i].height == Screen.currentResolution.height &&
+                _resolutions[i].refreshRate == Screen.currentResolution.refreshRate)
             {
                 currentResolutionIndex = i;
             }
@@ -44,7 +44,6 @@ public class SettingsMenu : MonoBehaviour
     public void SetVolume(float volume)
     {
         audioMixer.SetFloat("volume", volume);  
-
     }
 
     public void SetFullScreen(bool isFullScreen)
@@ -54,7 +53,7 @@ public class SettingsMenu : MonoBehaviour
 
     public void SetResolution(int resolutionIndex)
     {
-        Resolution resolution = resolutions[resolutionIndex];
+        Resolution resolution = _resolutions[resolutionIndex];
 
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
     }

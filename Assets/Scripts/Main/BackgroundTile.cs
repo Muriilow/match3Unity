@@ -1,22 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class BackgroundTile
 {
-    /*Boolean value that allow us to create non retangular shapes
-    by determing if this tile can or cannot have a candy*/
-    public bool isUsable;
-
-    //storing the candy inside the tile
-    public GameObject candy;
+    public bool IsUsable { get; set; }
+    public GameObject Candy { get; set; }
     
     //Constructor
-    public BackgroundTile(bool _isUsable, GameObject _candy)
+    public BackgroundTile(bool isUsable, GameObject candy)
     {
-        isUsable = _isUsable;
-        candy = _candy;
-
+        this.IsUsable = isUsable;
+        this.Candy = candy;
     }
 }

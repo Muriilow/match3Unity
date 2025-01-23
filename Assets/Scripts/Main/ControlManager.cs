@@ -27,7 +27,7 @@ public class ControlManager : MonoBehaviour
         if (hit.collider != null && hit.collider.gameObject.GetComponent<Candy>())
         {
             //If we're already moving a piece
-            if (_board.IsProcessingMove || _manager.IsPaused) 
+            if (_board.IsProcessingMove() || _manager.IsPaused) 
                 return;
 
             candy = hit.collider.gameObject.GetComponent<Candy>();
