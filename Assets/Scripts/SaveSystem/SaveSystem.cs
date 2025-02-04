@@ -30,6 +30,10 @@ namespace Systems.Persistence
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             LoadGame();
+            
+            //Volume
+            Bind<SoundClipManager, SoundData>(gameData.soundData);
+            
             if (scene.name != "NormalGame" && scene.name != "FastGame")
                 return;
                 
@@ -44,9 +48,8 @@ namespace Systems.Persistence
                 return;
             
             if (data == null)
-            {
                 data = new TData { Id = entity.Id };
-            }
+            
             entity.Bind(data);
            Debug.Log(data.Id); 
         }
@@ -79,6 +82,7 @@ namespace Systems.Persistence
         public string Name = "Candy";
         public FastData fastData;
         public NormalData normalData;
+        public SoundData soundData;
     }
     public interface ISaveable
     {

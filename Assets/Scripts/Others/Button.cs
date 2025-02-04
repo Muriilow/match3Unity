@@ -12,6 +12,11 @@ public class Button : MonoBehaviour
     {
         StartCoroutine(DoTransition("MenuGame"));
     }
+
+    public void ClickOnSettings()
+    {
+        StartCoroutine(DoTransition("Settings"));
+    }
     public void ClickOnNormal()
     {
         StartCoroutine(DoTransition("NormalGame"));
