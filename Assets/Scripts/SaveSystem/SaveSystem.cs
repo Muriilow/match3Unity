@@ -34,7 +34,7 @@ namespace Systems.Persistence
             
             //Volume and Localization
             Bind<SoundClipManager, SoundData>(gameData.soundData);
-            Bind<LocaleSelector, LanguageData>(gameData.languageData);
+            Bind<LocaleManager, LanguageData>(gameData.languageData);
             
             if (scene.name != "NormalGame" && scene.name != "FastGame")
                 return;

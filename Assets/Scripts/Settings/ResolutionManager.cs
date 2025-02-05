@@ -60,5 +60,13 @@ namespace Settings
             Resolution resolution = _filteredResolutions[resolutionIndex];
             Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
         }
+
+        public void SetFullScreen(bool fullScreen)
+        {
+            if(fullScreen)
+                Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+            else 
+                Screen.fullScreenMode = FullScreenMode.Windowed;
+        }
     }
 }

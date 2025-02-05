@@ -6,7 +6,7 @@ using UnityEngine.Localization.Settings;
 
 namespace Settings
 {
-    public class LocaleSelector : MonoBehaviour, IBind<LanguageData>
+    public class LocaleManager : MonoBehaviour, IBind<LanguageData>
     {
         private string _id = "langMnger";
         private LanguageData _data;
