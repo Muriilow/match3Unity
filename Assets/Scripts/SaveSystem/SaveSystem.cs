@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 using UnityEngine.SceneManagement;
+using Settings;
 
 namespace Systems.Persistence
 {
@@ -31,8 +32,9 @@ namespace Systems.Persistence
         {
             LoadGame();
             
-            //Volume
+            //Volume and Localization
             Bind<SoundClipManager, SoundData>(gameData.soundData);
+            Bind<LocaleSelector, LanguageData>(gameData.languageData);
             
             if (scene.name != "NormalGame" && scene.name != "FastGame")
                 return;
@@ -83,6 +85,7 @@ namespace Systems.Persistence
         public FastData fastData;
         public NormalData normalData;
         public SoundData soundData;
+        public LanguageData languageData;
     }
     public interface ISaveable
     {
