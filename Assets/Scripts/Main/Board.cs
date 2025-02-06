@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Serialization;
 using Utilities;
 
@@ -10,13 +11,19 @@ public class Board : MonoBehaviour
     //Define the size of the board
     [SerializeField] private int _width;
     [SerializeField] private int _height;
-
+   
+    [SerializeField] private Vector3 _centerWorld;
     //Define some spacing for the board
     private float _spacingX;
     private float _spacingY;
     
     [SerializeField] private ArrayLayout _arrayLayout;
-
+    
+    //Background
+    private List<GameObject> _backgrounds = new List<GameObject>();
+    [SerializeField] private GameObject _background;
+    [SerializeField] private GameObject _backroundParent;
+    
     //List to hold the value of the candies that will be destroyed 
     [SerializeField] private List<Candy> _candiesToRemove = new();
 
@@ -38,6 +45,7 @@ public class Board : MonoBehaviour
     void Start()
     {
         InitializeBoard();
+        
     }
 
     //Clears the board and then fill it again with random candies
@@ -49,14 +57,18 @@ public class Board : MonoBehaviour
         //Variables that control where should the candies be placed
         _spacingX = (float)(_width - 1) / 2 - 3; //-0.5
         _spacingY = (float)(_height - 1) / 2; //3.5
-
+        
         for (int y = 0; y < _height; y++)
         {
             for (int x = 0; x < _width; x++)
             {
                 Vector2 position;
-
-                position = new Vector2(x - _spacingX, y - _spacingY);
+                _centerWorld = Camera.main.ViewportToWorldPoint(new Vector3(.4f,.5f, Camera.main.nearClipPlane));
+                
+                float xPos = _centerWorld.x + (x - _spacingX);
+                float yPos = _centerWorld.y + (y - _spacingY);
+                
+                position = new Vector2(xPos, yPos);
 
                 //If a tile is marked in the inspect, make a background tile unusable 
                 if (_arrayLayout.rows[y].row[x])
@@ -73,15 +85,19 @@ public class Board : MonoBehaviour
     private void CreateCandies(Vector2 position, int x, int y)
     {
         int randomIndex;
-        GameObject candy;
-
+        GameObject candy, background;
+        
         randomIndex = UnityEngine.Random.Range(0, _candiesPrefabs.Length);
-
         candy = Instantiate(_candiesPrefabs[randomIndex], position, Quaternion.identity);
         candy.GetComponent<Candy>().XIndex = x;
         candy.GetComponent<Candy>().YIndex = y;
         candy.transform.SetParent(_candyParent.transform);
 
+        //Creating the background
+        background = Instantiate(_background, position, Quaternion.identity);
+        background.transform.SetParent(_backroundParent.transform);
+        _backgrounds.Add(background);
+        
         _tiles[x, y] = new BackgroundTile(true, candy);
         _candies.Add(candy);
     }
@@ -91,10 +107,17 @@ public class Board : MonoBehaviour
         if (_candies != null)
         {
             foreach (GameObject candy in _candies)
-            {
                 Destroy(candy);
-            }
+            
             _candies.Clear();
+        }
+
+        if (_backgrounds != null)
+        {
+            foreach (GameObject background in _backgrounds)
+                Destroy(background);
+            
+            _backgrounds.Clear();
         }
     }
 
@@ -489,7 +512,10 @@ public class Board : MonoBehaviour
         Vector3 targetPos;
             
         candyAbove = _tiles[x, yOffset].Candy.GetComponent<Candy>();
-        targetPos = new Vector3(x - _spacingX, y - _spacingY, candyAbove.transform.position.z);
+        
+        targetPos = new Vector3(_centerWorld.x + (x - _spacingX),
+                                _centerWorld.y + (y - _spacingY),
+                                candyAbove.transform.position.z);
 
         //Move it to the correct location
         candyAbove.MoveToTarget(targetPos);
@@ -515,9 +541,11 @@ public class Board : MonoBehaviour
         locationToMoveTo = _height - index;
         
         randomIndex = UnityEngine.Random.Range(0, _candiesPrefabs.Length);
+        
         newCandy = Instantiate( _candiesPrefabs[randomIndex],
-                             new Vector2(x - _spacingX, _height - _spacingY), 
-                                Quaternion.identity);
+                             new Vector2(_centerWorld.x + (x - _spacingX),
+                                            _centerWorld.y + (_height - _spacingY)), 
+                                            Quaternion.identity);
 
         candyClass = newCandy.GetComponent<Candy>();
         
