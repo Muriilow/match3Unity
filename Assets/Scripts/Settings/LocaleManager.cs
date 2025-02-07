@@ -3,6 +3,7 @@ using System.Collections;
 using Systems.Persistence;
 using UnityEngine;
 using UnityEngine.Localization.Settings;
+using UnityEngine.Serialization;
 
 namespace Settings
 {
@@ -10,7 +11,7 @@ namespace Settings
     {
         private string _id = "langMnger";
         private LanguageData _data;
-        private int _localizationId;
+        public int localizationId;
         private SaveSystem _saveSystem;
         private bool _active;
        
@@ -24,7 +25,7 @@ namespace Settings
         public void Bind(LanguageData data)
         {
             _data = data;
-            _localizationId = data.localeID;
+            localizationId = data.localeID;
         }
 
         private void Awake()
@@ -34,8 +35,8 @@ namespace Settings
 
         private void Start()
         {
-            ChangeLocale(_localizationId);
-            Debug.Log("Changing the localization to the index: " + _localizationId);
+            ChangeLocale(localizationId);
+            Debug.Log("Changing the localization to the index: " + localizationId);
         }
         #endregion
 

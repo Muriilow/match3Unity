@@ -35,7 +35,7 @@ public class Button : MonoBehaviour
     {
         SceneManager.LoadSceneAsync("Credits");
     }
-    
+
     private IEnumerator DoTransition(string levelName)
     {
         //Set the parameter start to true
