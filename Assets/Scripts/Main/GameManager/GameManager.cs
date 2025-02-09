@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 
 public abstract class GameManager : MonoBehaviour
 {
-	[SerializeField] private Candy[] _candiesPrefabs;
+	[SerializeField] protected Candy[] candiesPrefabs;
 	//The array containing the candies that need to be destroyed in order to win the game
 	[SerializeField] protected Candy[] candiesObjective = new Candy[3];
 	
@@ -21,6 +21,9 @@ public abstract class GameManager : MonoBehaviour
 	[SerializeField] protected TMP_Text movesTxt;
 	[SerializeField] protected TMP_Text levelTxt;
 
+	//Indexes of the candies off the objective
+	[SerializeField] protected int[] candiesIndex;
+	
 	//Reference to the sliders and it images
 	public ObjectiveSlider slider1;
 	public ObjectiveSlider slider2;
@@ -86,15 +89,14 @@ public abstract class GameManager : MonoBehaviour
 		slider2.SetValue(remainingCandies2);
 		slider2.SetValue(remainingCandies3);
 		
+		
 		for(int i = 0; i < 3; i++)
 		{
-			int randomIndex;
-			
-			randomIndex = UnityEngine.Random.Range(0, _candiesPrefabs.Length);
+			candiesIndex[i] = UnityEngine.Random.Range(0, candiesPrefabs.Length);
 			
 			//Set what candy needs to be destroyed to win the game(ignore this)
-			candiesObjective[i] = _candiesPrefabs[randomIndex];
-			imgSlider[i].sprite = candiesSprites[randomIndex].sprite;
+			candiesObjective[i] = candiesPrefabs[candiesIndex[i]];
+			imgSlider[i].sprite = candiesSprites[candiesIndex[i]].sprite;
 		}
 	}
 	#endregion

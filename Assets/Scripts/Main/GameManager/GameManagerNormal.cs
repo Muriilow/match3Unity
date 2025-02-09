@@ -36,19 +36,22 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
             points = data.points;
             moves = data.moves;
             
-            if (data.isFreshGame == false)
+            if (data.isFreshGame)
                 return;
             
             (remainingCandies1, remainingCandies2, remainingCandies3) = data.ReturnCandies();
-            (candiesObjective, candiesSprites) = data.ReturnObjectives();
+            candiesIndex = _data.candiesIndex;
         }
     }
 
-    private void ReloadObjective()
+    private void LoadObjective()
     {
-        for(int i = 0; i < 3; i++)
-			imgSlider[i].sprite = candiesSprites[i].sprite;
-            
+        for (int i = 0; i < 3; i++)
+        {
+			candiesObjective[i] = candiesPrefabs[candiesIndex[i]];
+            imgSlider[i].sprite = candiesSprites[candiesIndex[i]].sprite;
+        }
+
         slider1.SetValue(remainingCandies1);
         slider2.SetValue(remainingCandies2);
         slider3.SetValue(remainingCandies3);
@@ -60,7 +63,7 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
         if (_data.isFreshGame)
             CreateObjective();
         else
-            ReloadObjective();
+            LoadObjective();
         
     }
     #endregion
@@ -128,8 +131,11 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
         _data.points = points;
         _data.bestLevelNormal = _bestLevelNormal;
         
-        _data.candiesObjective = candiesObjective;
-        _data.candiesSprite = imgSlider; 
+        _data.remainingCandies1 = remainingCandies1;
+        _data.remainingCandies2 = remainingCandies2;
+        _data.remainingCandies3 = remainingCandies3;
+        
+        _data.candiesIndex = candiesIndex;
         
         SaveGame(); 
     }
@@ -172,17 +178,10 @@ public class NormalData : ISaveable
     public int remainingCandies2;
     public int remainingCandies3;
 
-    public Candy[] candiesObjective;
-    public UnityEngine.UI.Image[] candiesSprite;
-    
+    public int[] candiesIndex;
     public (int, int, int) ReturnCandies()
     {
         return (remainingCandies1, remainingCandies2, remainingCandies3);
-    }
-
-    public (Candy[], UnityEngine.UI.Image[]) ReturnObjectives()
-    {
-        return (candiesObjective, candiesSprite);
     }
 }
 
