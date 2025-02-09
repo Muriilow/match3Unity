@@ -2,17 +2,19 @@ using System.Collections.Generic;
 using Systems.Persistence;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
+
 public abstract class GameManager : MonoBehaviour
 {
 	[SerializeField] private Candy[] _candiesPrefabs;
 	//The array containing the candies that need to be destroyed in order to win the game
-	[SerializeField] private Candy[] _candiesObjective = new Candy[3];
+	[SerializeField] protected Candy[] candiesObjective = new Candy[3];
 	
     [SerializeField] private int _multiplier = 1;
 	
-	[SerializeField] private int _remainingCandies1 = 0;
-	[SerializeField] private int _remainingCandies2 = 0;
-	[SerializeField] private int _remainingCandies3 = 0;
+	[SerializeField] protected int remainingCandies1 = 0;
+	[SerializeField] protected int remainingCandies2 = 0;
+	[SerializeField] protected int remainingCandies3 = 0;
 
 	//Text in the UI 
 	[SerializeField] protected TMP_Text pointsTxt;
@@ -70,21 +72,19 @@ public abstract class GameManager : MonoBehaviour
 		loseGame = false;
 
 		saveSystem = FindObjectOfType<SaveSystem>();
-		
-		CreateObjective();
 	}
 
 	protected void CreateObjective()
 	{
 		//Resetting the var that contains the number of matched candies of the same type
-		_remainingCandies1 = 0;
-		_remainingCandies2 = 0;
-		_remainingCandies3 = 0;
+		remainingCandies1 = 0;
+		remainingCandies2 = 0;
+		remainingCandies3 = 0;
 			
 		//resetting the value of the slider too
-		slider1.SetValue(_remainingCandies1);
-		slider2.SetValue(_remainingCandies2);
-		slider2.SetValue(_remainingCandies3);
+		slider1.SetValue(remainingCandies1);
+		slider2.SetValue(remainingCandies2);
+		slider2.SetValue(remainingCandies3);
 		
 		for(int i = 0; i < 3; i++)
 		{
@@ -93,7 +93,7 @@ public abstract class GameManager : MonoBehaviour
 			randomIndex = UnityEngine.Random.Range(0, _candiesPrefabs.Length);
 			
 			//Set what candy needs to be destroyed to win the game(ignore this)
-			_candiesObjective[i] = _candiesPrefabs[randomIndex];
+			candiesObjective[i] = _candiesPrefabs[randomIndex];
 			imgSlider[i].sprite = candiesSprites[randomIndex].sprite;
 		}
 	}
@@ -110,7 +110,7 @@ public abstract class GameManager : MonoBehaviour
 
 		DisplayPoints(candiesRemoved, newPoints);
 
-		if (_remainingCandies1 >= 20 && _remainingCandies2 >= 20 && _remainingCandies3 >= 20)
+		if (remainingCandies1 >= 20 && remainingCandies2 >= 20 && remainingCandies3 >= 20)
 			WinGame();
 	}
 
@@ -138,20 +138,20 @@ public abstract class GameManager : MonoBehaviour
 
 	private void CheckCandyColor(Candy candy)
 	{
-		if (candy.candyColor == _candiesObjective[0].candyColor && _remainingCandies1 < 20)
+		if (candy.candyColor == candiesObjective[0].candyColor && remainingCandies1 < 20)
 		{
-			_remainingCandies1++;
-			slider1.SetValue(_remainingCandies1);
+			remainingCandies1++;
+			slider1.SetValue(remainingCandies1);
 		}
-		else if(candy.candyColor == _candiesObjective[1].candyColor && _remainingCandies2 < 20)
+		else if(candy.candyColor == candiesObjective[1].candyColor && remainingCandies2 < 20)
 		{
-			_remainingCandies2++;
-			slider2.SetValue(_remainingCandies2);
+			remainingCandies2++;
+			slider2.SetValue(remainingCandies2);
 		}
-		else if(candy.candyColor == _candiesObjective[2].candyColor && _remainingCandies3 < 20)
+		else if(candy.candyColor == candiesObjective[2].candyColor && remainingCandies3 < 20)
 		{
-			_remainingCandies3++;
-			slider3.SetValue(_remainingCandies3);
+			remainingCandies3++;
+			slider3.SetValue(remainingCandies3);
 		}
 	}
 	#endregion
