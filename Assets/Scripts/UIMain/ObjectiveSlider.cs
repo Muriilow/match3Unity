@@ -11,4 +11,9 @@ public class ObjectiveSlider : MonoBehaviour
     {
         slider.value = points;
     }
+
+    public void SetValue(float points)
+    {
+        slider.value = points;
+    }
 }

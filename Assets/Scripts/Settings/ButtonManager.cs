@@ -2,13 +2,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Settings;
+using Systems.Persistence;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 //Class that handles the change between button sprites when they are selected 
-public class ButtonLocalization : MonoBehaviour
+public class ButtonManager : MonoBehaviour
 {
+    
     [SerializeField] private GameObject _ptSelected;
     [SerializeField] private GameObject _ptUnselected;
     [SerializeField] private GameObject _enSelected;
@@ -16,6 +18,7 @@ public class ButtonLocalization : MonoBehaviour
     
     [SerializeField] private GameObject _locManager;
     
+
     //Changes which sprites each button will have depending on the game language
     public void ChangeLanguage(int language)
     {

@@ -19,6 +19,10 @@ namespace Settings
         
         [SerializeField] private AudioMixer _mixer;
 
+        [SerializeField] private ObjectiveSlider _sliderMusic;
+        [SerializeField] private ObjectiveSlider _sliderSoundFX;
+        [SerializeField] private ObjectiveSlider _sliderMaster;
+        
         private SaveSystem _saveSystem;
         public string Id 
         {
@@ -43,6 +47,13 @@ namespace Settings
 
         private void Start()
         {
+            if (_sliderMaster != null && _sliderSoundFX != null && _sliderMusic != null)
+            {
+                _sliderMaster.SetValue(_masterVol);
+                _sliderMusic.SetValue(_musicVol);
+                _sliderSoundFX.SetValue(_soundFxVol);
+            }
+
             SetMusicVolume(_musicVol);
             SetMasterVolume(_masterVol);
             SetSfxVolume(_soundFxVol);
