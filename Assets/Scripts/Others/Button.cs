@@ -7,12 +7,7 @@ using UnityEngine.Serialization;
 public class Button : MonoBehaviour
 {
     [SerializeField] private Animator _transition;
-    [SerializeField] private float _transitionTime = 1f;
-    public void ClickOnPlay()
-    {
-        StartCoroutine(DoTransition("MenuGame"));
-    }
-
+    [SerializeField] private float _transitionTime = 2f;
     public void ClickOnSettings()
     {
         StartCoroutine(DoTransition("Settings"));
@@ -33,16 +28,13 @@ public class Button : MonoBehaviour
 
     public void ClickOnCredits()
     {
-        SceneManager.LoadSceneAsync("Credits");
+        StartCoroutine(DoTransition("Credits"));
     }
 
     private IEnumerator DoTransition(string levelName)
     {
-        //Set the parameter start to true
         _transition.SetTrigger("Start");
-        //Waiting for 1 second
         yield return new WaitForSeconds(_transitionTime);
-        //Loading the scene
         SceneManager.LoadScene(levelName);
     }
 }
