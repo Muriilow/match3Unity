@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Systems.Persistence;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Serialization;
 
 public abstract class GameManager : MonoBehaviour
@@ -17,9 +18,9 @@ public abstract class GameManager : MonoBehaviour
 	[SerializeField] protected int remainingCandies3 = 0;
 
 	//Text in the UI 
-	[SerializeField] protected TMP_Text pointsTxt;
-	[SerializeField] protected TMP_Text movesTxt;
-	[SerializeField] protected TMP_Text levelTxt;
+	[SerializeField] protected Text pointsTxt;
+	[SerializeField] protected Text movesTxt;
+	[SerializeField] protected Text levelTxt;
 
 	//Indexes of the candies off the objective
 	[SerializeField] protected int[] candiesIndex;
