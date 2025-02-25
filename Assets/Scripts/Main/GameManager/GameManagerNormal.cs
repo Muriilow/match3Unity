@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Systems.Persistence;
+using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine.Serialization;
 
-public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
+public class GameManagerNormal : GameManager, IBind<NormalData>
 {
     private string _id = "normalMnger";
 	private int _levelNormal;
@@ -18,13 +19,12 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
     }
 
     #region Start Game
-
     public void Bind(NormalData data)
     {
         _data = data;
         _data.Id = Id;
         _bestLevelNormal = data.bestLevelNormal;
-        _data.isFreshGame = data.isFreshGame;
+        isFreshGame = data.isFreshGame;
         
         if (data.isNew)
         {
@@ -44,52 +44,37 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
         }
     }
 
-    private void LoadObjective()
-    {
-        for (int i = 0; i < 3; i++)
-        {
-			candiesObjective[i] = candiesPrefabs[candiesIndex[i]];
-            imgSlider[i].sprite = candiesSprites[candiesIndex[i]].sprite;
-        }
-
-        slider1.SetValue(remainingCandies1);
-        slider2.SetValue(remainingCandies2);
-        slider3.SetValue(remainingCandies3);
-    }
     protected void Start()
     {
         _levelNormal = _bestLevelNormal;
         
-        if (_data.isFreshGame)
+        if (isFreshGame)
             CreateObjective();
         else
             LoadObjective();
-        
     }
+
     #endregion
     
     #region Win/Lose Game
     protected override void WinGame()
     {
-        _data.isFreshGame = true;
+        isFreshGame = true;
+        
+        victoryPanel.SetActive(true);
         
         PauseGame();
-        isGameEnded = true;
-        _levelNormal++;
-        victoryPanel.SetActive(true);
-
         FinishGame();
-        SaveGame();
     }
 
     protected override void LoseGame()
     {
-        _data.isFreshGame = true;
+        isFreshGame = true;
+        
+		losePanel.SetActive(true);
         
         PauseGame();
         FinishGame();
-        SaveGame();
-        base.LoseGame();
     }
     #endregion
     
@@ -98,35 +83,28 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
     {
         saveSystem.gameData.normalData = _data;
         saveSystem.SaveGame();
-        //TODO: Make a method to return a random number of moves to data.moves
     }
 
-    private void FinishGame()
+    protected override void FinishGame()
     {
+        base.FinishGame();
+        
+        points = 0;
+        isGameEnded = true;
+        _levelNormal++;
+        
         if(_levelNormal > _bestLevelNormal)
             _bestLevelNormal = _levelNormal;
-        
-        _data.bestLevelNormal = _bestLevelNormal;
-        _data.points = 0;
-        _data.moves = 40;
     }
     #endregion
 
-    #region Pause System
-    public void PauseGame()
-    {
-        IsPaused = true;
-    }
-
-    public void ResumeGame()
-    {
-        IsPaused = false;
-    }
-
+    
     public void QuitGame()
     {
-        //Assigning the values to save 
-        _data.isFreshGame = false;
+        if(!isFreshGame)
+            _data.candiesIndex = candiesIndex;
+        
+        _data.isFreshGame = isFreshGame;
         _data.moves = moves;
         _data.points = points;
         _data.bestLevelNormal = _bestLevelNormal;
@@ -135,11 +113,8 @@ public class GameManagerNormal : GameManager, IBind<NormalData>, IPausable
         _data.remainingCandies2 = remainingCandies2;
         _data.remainingCandies3 = remainingCandies3;
         
-        _data.candiesIndex = candiesIndex;
-        
         SaveGame(); 
     }
-    #endregion
     
     public override void DeadLocked()
     {

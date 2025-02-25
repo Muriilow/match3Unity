@@ -6,5 +6,4 @@ public interface IPausable
 {
     public void PauseGame();
     public void ResumeGame();
-    public void QuitGame();
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Serialization;
 
-public abstract class GameManager : MonoBehaviour
+public abstract class GameManager : MonoBehaviour, IPausable
 {
 	[SerializeField] protected Candy[] candiesPrefabs;
 	//The array containing the candies that need to be destroyed in order to win the game
@@ -31,10 +31,10 @@ public abstract class GameManager : MonoBehaviour
 	public ObjectiveSlider slider3;
 
 	//Array to get the sprites of candies
-	public UnityEngine.UI.Image[] candiesSprites;
+	public Image[] candiesSprites;
 
 	//Array to get the UI Images for the sliders
-	public UnityEngine.UI.Image[] imgSlider;
+	public Image[] imgSlider;
 
 	//reference for the floating text
 	public GameObject[] floatingText;  
@@ -50,6 +50,7 @@ public abstract class GameManager : MonoBehaviour
 	protected int points;
 	protected SaveSystem saveSystem;
 	protected bool loseGame;
+	protected bool isFreshGame;
 
 	public bool IsPaused { get; protected set; }
 	protected virtual void Update()
@@ -80,15 +81,11 @@ public abstract class GameManager : MonoBehaviour
 
 	protected void CreateObjective()
 	{
-		//Resetting the var that contains the number of matched candies of the same type
-		remainingCandies1 = 0;
-		remainingCandies2 = 0;
-		remainingCandies3 = 0;
-			
+		isFreshGame = false;
 		//resetting the value of the slider too
 		slider1.SetValue(remainingCandies1);
 		slider2.SetValue(remainingCandies2);
-		slider2.SetValue(remainingCandies3);
+		slider3.SetValue(remainingCandies3);
 		
 		
 		for(int i = 0; i < 3; i++)
@@ -100,6 +97,23 @@ public abstract class GameManager : MonoBehaviour
 			imgSlider[i].sprite = candiesSprites[candiesIndex[i]].sprite;
 		}
 	}
+    public void LoadObjective()
+    {
+        ResumeGame();
+        isGameEnded = false;
+        isFreshGame = false; 
+        IsPaused = false;
+        
+        for (int i = 0; i < 3; i++)
+        {
+			candiesObjective[i] = candiesPrefabs[candiesIndex[i]];
+            imgSlider[i].sprite = candiesSprites[candiesIndex[i]].sprite;
+        }
+
+        slider1.SetValue(remainingCandies1);
+        slider2.SetValue(remainingCandies2);
+        slider3.SetValue(remainingCandies3);
+    }
 	#endregion
 	
 	#region Check turns
@@ -161,13 +175,10 @@ public abstract class GameManager : MonoBehaviour
 
 	#region Win/Lose
 	protected abstract void WinGame();
+
 	protected virtual void LoseGame()
 	{
-		isGameEnded = true;            
-
-		losePanel.SetActive(true);
 		
-		saveSystem.SaveGame();
 	}
 	#endregion
 
@@ -194,6 +205,29 @@ public abstract class GameManager : MonoBehaviour
     }
 
 	#endregion
+	
+	#region Finish Game
+
+	protected virtual void FinishGame()
+	{
+        moves = 40;
+        
+        remainingCandies1 = 0;
+        remainingCandies2 = 0;
+        remainingCandies3 = 0;
+	}
+	#endregion
+	
+	#region Pause Game
+    public void PauseGame()
+    {
+       IsPaused = true; 
+    }
+    public void ResumeGame()
+    {
+        IsPaused = false;
+    }
+    #endregion
 }
 
 

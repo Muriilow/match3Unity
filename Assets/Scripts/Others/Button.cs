@@ -8,9 +8,18 @@ public class Button : MonoBehaviour
 {
     [SerializeField] private Animator _transition;
     [SerializeField] private float _transitionTime = 2f;
+
+    [SerializeField] private GameObject _firstUI;
+    [SerializeField] private GameObject _secondUI;
+    
     public void ClickOnSettings()
     {
         StartCoroutine(DoTransition("Settings"));
+    }
+
+    public void ClickOnPlay()
+    {
+       StartCoroutine(ActivateGameObject()); 
     }
     public void ClickOnNormal()
     {
@@ -36,5 +45,13 @@ public class Button : MonoBehaviour
         _transition.SetTrigger("Start");
         yield return new WaitForSeconds(_transitionTime);
         SceneManager.LoadScene(levelName);
+    }
+
+    private IEnumerator ActivateGameObject()
+    {
+        _transition.SetTrigger("Start");
+        yield return new WaitForSeconds(_transitionTime);
+        _firstUI.SetActive(false);
+        _secondUI.SetActive(true);
     }
 }

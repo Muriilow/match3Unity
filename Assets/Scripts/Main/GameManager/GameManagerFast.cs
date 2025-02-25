@@ -4,8 +4,9 @@ using TMPro;
 using UnityEngine;
 using Systems.Persistence;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
-public class GameManagerFast : GameManager, IBind<FastData>, IPausable
+public class GameManagerFast : GameManager, IBind<FastData>
 {
     //Time
     private float _storeTime;
@@ -19,7 +20,7 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
     private bool _setPanel = false; 
     
     [SerializeField] private GameObject _explanationPanel;
-    [SerializeField] private TextMeshProUGUI _timerText;
+    [SerializeField] private Text _timerText;
     [SerializeField] private GameObject _startPanel;
     [SerializeField] private FastData _data;
     
@@ -40,7 +41,7 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
         if(data.isNew)
         {
             _setPanel = true;
-            data.isNew = false;
+            _data.isNew = false;
         }
     }
     
@@ -60,6 +61,8 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
             _explanationPanel.SetActive(true);
         else
             _startPanel.SetActive(true);
+        
+        CreateObjective();
     }
 
     private void CheckTime()
@@ -104,7 +107,15 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
     }
     protected override void LoseGame()
     {
+		losePanel.SetActive(true);
         PauseGame();
+        FinishGame();
+        
+        isGameEnded = true;
+        
+        if (_levelFast > _bestLevelFast)
+            _bestLevelFast = _levelFast;
+        
         _levelFast = 1;
 
         base.LoseGame();
@@ -112,48 +123,33 @@ public class GameManagerFast : GameManager, IBind<FastData>, IPausable
     protected override void WinGame()
     {
         _levelFast++;
+        isGameEnded = false;
+        
+        FinishGame();
         CheckTime();
         CreateObjective();
     }
     #endregion
     
     #region Pause
-    public void PauseGame()
-    {
-       IsPaused = true; 
-    }
-
-    public void ResumeGame()
-    {
-        IsPaused = false;
-    }
-
     public void QuitGame()
     {
+        _data.bestLevelFast = _bestLevelFast;
+        
         SaveGame();
-        saveSystem.SaveGame(); 
     }
 
     public void SaveGame()
     {
-        if (_levelFast > _bestLevelFast)
-        {
-            _bestLevelFast = _levelFast;
-        }
-
-        _data.lastLevelFast = _levelFast;
-        _data.bestLevelFast = _bestLevelFast;
-        
         saveSystem.gameData.fastData = _data; 
+        saveSystem.SaveGame(); 
     }
     #endregion
     
     protected override void Update()
     {
         if (!IsPaused)
-        {
             _timeFast -= Time.deltaTime;
-        }
 
         _timerText.text = _timeFast.ToString("N2");
         levelTxt.text = _levelFast.ToString();
@@ -180,5 +176,4 @@ public class FastData : ISaveable
     [field: SerializeField] public string Id { get; set; }
     public int bestLevelFast;
     public bool isNew = true;
-    public int lastLevelFast;
 }
