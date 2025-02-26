@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Systems.Persistence;
-using UnityEditor.Localization.Plugins.XLIFF.V20;
 using UnityEngine.Serialization;
 
 public class GameManagerNormal : GameManager, IBind<NormalData>

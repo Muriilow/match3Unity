@@ -54,7 +54,6 @@ namespace Systems.Persistence
                 data = new TData { Id = entity.Id };
             
             entity.Bind(data);
-           Debug.Log(data.Id); 
         }
         public void SaveGame(bool overwrite = true)
         {

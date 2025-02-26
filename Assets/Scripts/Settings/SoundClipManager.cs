@@ -60,6 +60,9 @@ namespace Settings
         }
         public void SaveGame()
         {
+            if (_saveSystem == null)
+                return;
+            
             _saveSystem.gameData.soundData = _data;
             _saveSystem.SaveGame();
         }
@@ -79,7 +82,7 @@ namespace Settings
 
         public void SetSfxVolume(float volume)
         {
-            _mixer.SetFloat("SoundFxVol", Mathf.Log10(volume) * 20f);
+            _mixer.SetFloat("SoundVol", Mathf.Log10(volume) * 20f);
             _data.sfxVol = volume;
         }
         #endregion

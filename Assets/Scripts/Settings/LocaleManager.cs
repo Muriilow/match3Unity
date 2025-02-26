@@ -25,6 +25,7 @@ namespace Settings
         public void Bind(LanguageData data)
         {
             _data = data;
+            _data.Id = _id;
             localizationId = data.localeID;
         }
 
