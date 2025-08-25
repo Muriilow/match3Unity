@@ -46,7 +46,7 @@ public abstract class GameManager : MonoBehaviour, IPausable
 	public bool isGameEnded;
 	
 	//ManagerFast and ManagerNormal could use these vars
-	protected int moves;
+	[SerializeField] protected int moves;
 	protected int points;
 	protected SaveSystem saveSystem;
 	protected bool loseGame;
@@ -142,7 +142,7 @@ public abstract class GameManager : MonoBehaviour, IPausable
 			if (candy.WasSelected && !wasTextCreated)
 			{
 				wasTextCreated = true;
-				CreateFloatingText(newPoints, candy.transform.position);
+				CreateFloatingText(newPoints, candy.transform.position + new Vector3(0f,0f,-1f));
 			}
 
 			CheckCandyColor(candy);
@@ -150,7 +150,7 @@ public abstract class GameManager : MonoBehaviour, IPausable
 
 		//Create floating text
 		if(!wasTextCreated)
-			CreateFloatingText(newPoints, candiesRemoved[random].transform.position);
+			CreateFloatingText(newPoints, candiesRemoved[random].transform.position+ new Vector3(0f,0f,-1f));
 	}
 
 	private void CheckCandyColor(Candy candy)

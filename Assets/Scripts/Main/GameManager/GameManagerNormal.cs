@@ -127,6 +127,9 @@ public class GameManagerNormal : GameManager, IBind<NormalData>
         _data.moves = moves;
         
         base.ProcessTurn(reduceMoves, candiesRemoved, multiplyPoints);
+        
+        if(moves <= 0)
+            LoseGame();
     }
     protected override void Update()
     {
